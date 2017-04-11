@@ -4,6 +4,7 @@ import vlad.fp.lib.functor.Functor;
 import vlad.fp.lib.generic.Generic;
 
 public interface Supplier<R> extends Generic<Supplier, R> {
+
   R apply();
 
   default <S> Supplier<S> map(Function<R, S> f) {
@@ -20,4 +21,5 @@ public interface Supplier<R> extends Generic<Supplier, R> {
       return lift(fa).map(f);
     }
   };
+
 }
