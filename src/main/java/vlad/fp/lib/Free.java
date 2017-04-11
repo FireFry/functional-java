@@ -1,6 +1,7 @@
 package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
+import vlad.fp.lib.function.Supplier;
 import vlad.fp.lib.functor.Functor;
 import vlad.fp.lib.generic.Generic;
 import vlad.fp.lib.generic.Generic2;
@@ -19,8 +20,8 @@ public abstract class Free<F, T> implements Generic2<Free, F, T> {
     return Suspend(thunk);
   }
 
-  public static <F, T> Free<F, T> lift(Generic2<Free, F, T> g) {
-    return (Free<F, T>) g;
+  public static <F, T> Free<F, T> lift(Generic<Generic<Free, F>, T> f) {
+    return (Free<F, T>) f;
   }
 
   private enum Type {
@@ -178,5 +179,19 @@ public abstract class Free<F, T> implements Generic2<Free, F, T> {
 
   protected <S> BindSuspend<F, S, T> asBindSuspend() {
     throw new AssertionError();
+  }
+
+  public static <S> Monad<Generic<Free, S>> freeMonad() {
+    return new Monad<Generic<Free, S>>() {
+      @Override
+      public <T> Free<S, T> point(Supplier<T> a) {
+        return Done(a.apply());
+      }
+
+      @Override
+      public <T, R> Free<S, R> flatMap(Generic<Generic<Free, S>, T> fa, Function<T, Generic<Generic<Free, S>, R>> f) {
+        return Free.lift(fa).flatMap(x -> Free.lift(f.apply(x)));
+      }
+    };
   }
 }

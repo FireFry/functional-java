@@ -60,7 +60,7 @@ public class BankingExample {
     }
   }
 
-  interface Banking<F> {
+  interface Banking<F> extends Generic<Banking, F> {
 
     Generic<F, List<Account>> accounts();
 
@@ -73,7 +73,30 @@ public class BankingExample {
   }
 
   abstract static class BankingF<T> implements Generic<BankingF, T> {
+    static <T> BankingF<T> lift(Generic<BankingF, T> gen) {
+      return (BankingF<T>) gen;
+    }
+
     private BankingF() {}
+
+    <R> R foldT(
+        Function<Accounts<T>, R> accountsCase,
+        Function<Balance<T>, R> balanceCase,
+        Function<Transfer<T>, R> transferCase,
+        Function<Withdraw<T>, R> withdrawCase) {
+
+      Class<? extends BankingF> cls = getClass();
+      if (cls.equals(Accounts.class)) {
+        return accountsCase.apply((Accounts<T>) this);
+      } else if (cls.equals(Balance.class)) {
+        return balanceCase.apply((Balance<T>) this);
+      } else if (cls.equals(Transfer.class)) {
+        return transferCase.apply((Transfer<T>) this);
+      } else if (cls.equals(Withdraw.class)) {
+        return withdrawCase.apply((Withdraw<T>) this);
+      }
+      throw new AssertionError();
+    }
 
     static final Banking<BankingF> BANKING = new Banking<BankingF>() {
       @Override
@@ -94,6 +117,18 @@ public class BankingExample {
       @Override
       public Generic<BankingF, Amount> withdraw(Amount amount) {
         return new Withdraw<>(amount, Function.identity());
+      }
+    };
+
+    static final Functor<BankingF> FUNCTOR = new Functor<BankingF>() {
+      @Override
+      public <T, R> Generic<BankingF, R> map(Generic<BankingF, T> fa, Function<T, R> f) {
+        return lift(fa).foldT(
+            accounts -> new Accounts<>(list -> f.apply(accounts.next.apply(list))),
+            balance -> new Balance<>(balance.account, amount -> f.apply(balance.next.apply(amount))),
+            transfer -> new Transfer<>(transfer.amount, transfer.from, transfer.to, result -> f.apply(transfer.next.apply(result))),
+            withdraw -> new Withdraw<>(withdraw.amount, amount -> f.apply(withdraw.next.apply(amount)))
+        );
       }
     };
 
@@ -165,10 +200,19 @@ public class BankingExample {
   }
 
   static <F> Generic<F, Amount> program(Monad<F> M, Banking<F> B) {
-    return M.flatMap(B.accounts(), as -> M.flatMap(
+    return M.flatMap(
+        B.accounts(), as -> M.flatMap(
         B.balance(as.get(0)), b -> M.flatMap(
         B.transfer(new Amount(123), new From(new Account("Foo")), new To(new Account("Bar"))), x -> M.map(
         B.withdraw(new Amount(5)), ignored -> b))));
+  }
+
+  static Free<BankingF, Amount> bankingFProgram() {
+    return Free.lift(program(Free.freeMonad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
+  }
+
+  public static void main(String[] args) {
+
   }
 
 }
