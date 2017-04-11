@@ -3,19 +3,24 @@ package vlad.fp.lib;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.functor.Functor;
 import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.generic.Generic2;
 
-public abstract class Free<F, T> {
+public abstract class Free<F, T> implements Generic2<Free, F, T> {
 
   public static <F, T> Free<F, T> done(T value) {
     return Done(value);
   }
 
-  public static <F, T> Free<F, T> liftF(Generic<F, T> value, Functor<F> F){
+  public static <F, T> Free<F, T> liftF(Functor<F> F, Generic<F, T> value){
     return Suspend(F.map(value, Free::Done));
   }
 
   public static <F, T> Free<F, T> suspend(Generic<F, Free<F, T>> thunk) {
     return Suspend(thunk);
+  }
+
+  public static <F, T> Free<F, T> lift(Generic2<Free, F, T> g) {
+    return (Free<F, T>) g;
   }
 
   private enum Type {

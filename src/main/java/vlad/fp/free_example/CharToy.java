@@ -14,13 +14,13 @@ abstract class CharToy<A> implements Generic<CharToy, A> {
   public abstract <Z> Z fold(Function2<Character, A, Z> output, Function<A, Z> bell, Z done);
 
   public static Free<CharToy, Void> output(final char a){
-    return Free.liftF(new CharOutput<>(a, null), functor);
+    return Free.liftF(functor, new CharOutput<>(a, null));
   }
   public static Free<CharToy, Void> bell(){
-    return Free.liftF(new CharBell<Void>(null), functor);
+    return Free.liftF(functor, new CharBell<Void>(null));
   }
   public static Free<CharToy, Void> done(){
-    return Free.liftF(new CharDone<Void>(), functor);
+    return Free.liftF(functor, new CharDone<Void>());
   }
   public static <A> Free<CharToy, A> pointed(final A a){
     return Free.done(a);

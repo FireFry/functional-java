@@ -20,7 +20,7 @@ public final class Trampoline<T> {
   }
 
   public static <T> Trampoline<T> delay(Supplier<T> supplier) {
-    return new Trampoline<>(Free.liftF(supplier, Supplier.FUNCTOR));
+    return new Trampoline<>(Free.liftF(Supplier.FUNCTOR, supplier));
   }
 
   public <R> Trampoline<R> flatMap(Function<T, Trampoline<R>> f) {

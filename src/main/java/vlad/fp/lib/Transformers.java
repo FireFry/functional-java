@@ -4,7 +4,6 @@ import static vlad.fp.lib.Utils.voidF;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import vlad.fp.mosaic.Matrix;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,11 +73,5 @@ public abstract class Transformers {
 
   public static <T> Future<Seq<T>> liftFuture(Seq<Future<T>> seq) {
     return liftFuture(seq.toList()).map(Seq::wrap);
-  }
-
-  public static <T> Task<Matrix<T>> liftTask(Matrix<Task<T>> matrix) {
-    return liftTask(matrix.toList()).map(list -> Matrix.of(matrix.columns(),
-        matrix.rows(),
-        Seq.wrap(list)));
   }
 }
