@@ -1,0 +1,88 @@
+package vlad.fp.free_example;
+
+import vlad.fp.lib.Free;
+import vlad.fp.lib.functor.Functor;
+import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.function.Function;
+import vlad.fp.lib.function.Function2;
+
+abstract class CharToy<A> implements Generic<CharToy, A> {
+  public static <R> CharToy<R> lift(Generic<CharToy, R> l) {
+    return (CharToy<R>) l;
+  }
+
+  public abstract <Z> Z fold(Function2<Character, A, Z> output, Function<A, Z> bell, Z done);
+
+  public static Free<CharToy, Void> output(final char a){
+    return Free.liftF(new CharOutput<>(a, null), functor);
+  }
+  public static Free<CharToy, Void> bell(){
+    return Free.liftF(new CharBell<Void>(null), functor);
+  }
+  public static Free<CharToy, Void> done(){
+    return Free.liftF(new CharDone<Void>(), functor);
+  }
+  public static <A> Free<CharToy, A> pointed(final A a){
+    return Free.done(a);
+  }
+  public abstract <B> CharToy<B> map(Function<A, B> f);
+  private CharToy(){}
+
+  public static final Functor<CharToy> functor =
+    new Functor<CharToy>() {
+      @Override
+      public <X, Y> Generic<CharToy, Y> map(
+          Generic<CharToy, X> fa,
+          Function<X, Y> f) {
+        return (lift(fa)).map(f);
+      }
+    };
+
+  private static final class CharOutput<A> extends CharToy<A>{
+    private final char a;
+    private final A next;
+    private CharOutput(final char a, final A next) {
+      this.a = a;
+      this.next = next;
+    }
+
+    @Override
+    public <Z> Z fold(final Function2<Character, A, Z> output, final Function<A, Z> bell, final Z done) {
+      return output.apply(a, next);
+    }
+
+    @Override
+    public <B> CharToy<B> map(final Function<A, B> f) {
+      return new CharOutput<>(a, f.apply(next));
+    }
+  }
+
+  private static final class CharBell<A> extends CharToy<A> {
+    private final A next;
+    private CharBell(final A next) {
+      this.next = next;
+    }
+
+    @Override
+    public <Z> Z fold(final Function2<Character, A, Z> output, final Function<A, Z> bell, Z done) {
+      return bell.apply(next);
+    }
+
+    @Override
+    public <B> CharToy<B> map(final Function<A, B> f) {
+      return new CharBell<>(f.apply(next));
+    }
+  }
+
+  private static final class CharDone<A> extends CharToy<A> {
+    @Override
+    public <Z> Z fold(final Function2<Character, A, Z> output, final Function<A, Z> bell, final Z done) {
+      return done;
+    }
+
+    @Override
+    public <B> CharToy<B> map(final Function<A, B> f) {
+      return new CharDone<>();
+    }
+  }
+}
