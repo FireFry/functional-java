@@ -3,6 +3,7 @@ package vlad.fp.free_example;
 import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
+import vlad.fp.lib.Natural;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;
 import vlad.fp.lib.higher.Parametrized;
@@ -199,43 +200,6 @@ public class BankingExample {
     }
   }
 
-  abstract static class LoggingF<T> implements Parametrized<LoggingF, T> {
-    static <T> LoggingF<T> lift(Parametrized<LoggingF, T> par) {
-      return (LoggingF<T>) par;
-    }
-
-    <R> R foldT(Function<Log<T>, R> logCase) {
-      if (getClass().equals(Log.class)) {
-        return logCase.apply((Log<T>) this);
-      }
-      throw new AssertionError();
-    }
-
-    static Free<LoggingF, Void> log(String s) {
-      return Free.liftF(FUNCTOR, new Log<>(s, Function.identity()));
-    }
-
-    static Functor<LoggingF> FUNCTOR = new Functor<LoggingF>() {
-      @Override
-      public <T, R> Parametrized<LoggingF, R> map(Parametrized<LoggingF, T> fa, Function<T, R> f) {
-        LoggingF<T> lift = lift(fa);
-        return lift.foldT(
-            log -> new Log<>(log.s, v -> f.apply(log.next.apply(v)))
-        );
-      }
-    };
-  }
-
-  static final class Log<T> extends LoggingF<T> {
-    final String s;
-    final Function<Void, T> next;
-
-    Log(String s, Function<Void, T> next) {
-      this.s = s;
-      this.next = next;
-    }
-  }
-
   static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
     return M.flatMap(
         B.accounts(), as -> M.flatMap(
@@ -247,6 +211,69 @@ public class BankingExample {
   static Free<BankingF, Amount> bankingFProgram() {
     return Free.lift(program(Free.freeMonad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
   }
+
+  static final class Halt<F, T> implements Parametrized<Parametrized<Halt, F>, T> {
+    static <F, T> Halt<F, T> lift(Parametrized<Parametrized<Halt, F>, T> par) {
+      return (Halt<F, T>) par;
+    }
+
+    final Parametrized<F, Void> p;
+
+    Halt(Parametrized<F, Void> p) {
+      this.p = p;
+    }
+
+    static <F> Functor<Parametrized<Halt, F>> functor() {
+      return new Functor<Parametrized<Halt, F>>() {
+        @Override
+        public <T, R> Halt<F, R> map(Parametrized<Parametrized<Halt, F>, T> fa, Function<T, R> f) {
+          return new Halt<>(Halt.lift(fa).p);
+        }
+      };
+    }
+
+    static class FreeHaltOps<F, T> {
+      final Functor<F> functor;
+      final Free<Parametrized<Halt, F>, T> free;
+
+      FreeHaltOps(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
+        this.functor = functor;
+        this.free = free;
+      }
+
+      Free<F, Void> unhalt() {
+        return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(null));
+      }
+    }
+  }
+
+  static abstract class LoggingF<T> implements Parametrized<LoggingF, T> {
+    private LoggingF() {}
+
+    static final class Log extends LoggingF<Void> {
+      final String msg;
+
+      Log(String msg) {
+        this.msg = msg;
+      }
+    }
+  }
+
+  static final Natural<BankingF, Parametrized<Free, Parametrized<Halt, LoggingF>>> bankingLogging = new Natural<BankingF, Parametrized<Free, Parametrized<Halt, LoggingF>>>() {
+    <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
+      return Free.liftF(Halt.functor(), new Halt<>(new LoggingF.Log(msg)));
+    }
+
+    @Override
+    public <T> Parametrized<Parametrized<Free, Parametrized<Halt, LoggingF>>, T> apply(Parametrized<BankingF, T> fa) {
+      return BankingF.lift(fa).foldT(
+          accounts -> log("Fetch accounts"),
+          balance -> log("Fetch balance for account: " + balance.account),
+          transfer -> log("Transfer " + transfer.amount + " from " + transfer.from + " to " + transfer.to),
+          withdraw -> log("Withdraw " + withdraw.amount)
+      );
+    }
+  };
 
   public static void main(String[] args) {
 
