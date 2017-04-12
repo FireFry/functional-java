@@ -349,7 +349,7 @@ public class BankingExample {
 
   static final Interpreter<BankingF, Parametrized<Halt, LoggingF>> bankingLogging = new Interpreter<BankingF, Parametrized<Halt, LoggingF>>() {
     <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
-      return Free.liftF(Halt.functor(), new Halt<>(new LoggingF.Log(msg)));
+      return Free.liftF(Halt.functor(), new Halt<>(new LoggingF.Log<>(msg)));
     }
 
     @Override
