@@ -259,7 +259,9 @@ public class BankingExample {
     }
   }
 
-  static final Natural<BankingF, Parametrized<Free, Parametrized<Halt, LoggingF>>> bankingLogging = new Natural<BankingF, Parametrized<Free, Parametrized<Halt, LoggingF>>>() {
+  interface Interpreter<F, G> extends Natural<F,Parametrized<Free,G>> {}
+
+  static final Interpreter<BankingF, Parametrized<Halt, LoggingF>> bankingLogging = new Interpreter<BankingF, Parametrized<Halt, LoggingF>>() {
     <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
       return Free.liftF(Halt.functor(), new Halt<>(new LoggingF.Log(msg)));
     }
