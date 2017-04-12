@@ -1,5 +1,6 @@
 package vlad.fp.free_example;
 
+import com.google.common.collect.ImmutableList;
 import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
@@ -253,18 +254,8 @@ public class BankingExample {
       };
     }
 
-    static class FreeHaltOps<F, T> {
-      final Functor<F> functor;
-      final Free<Parametrized<Halt, F>, T> free;
-
-      FreeHaltOps(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
-        this.functor = functor;
-        this.free = free;
-      }
-
-      Free<F, Void> unhalt() {
-        return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(null));
-      }
+    static <F, T> Free<F, Void> unhalt(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
+      return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(null));
     }
   }
 
@@ -307,13 +298,75 @@ public class BankingExample {
   }
 
   static abstract class ProtocolF<T> implements Parametrized<ProtocolF, T> {
+    static <T> ProtocolF<T> lift(Parametrized<ProtocolF, T> par) {
+      return (ProtocolF<T>) par;
+    }
+
+    static final Functor<ProtocolF> FUNCTOR = new Functor<ProtocolF>() {
+      @Override
+      public <T, R> Parametrized<ProtocolF, R> map(Parametrized<ProtocolF, T> fa, Function<T, R> f) {
+        return lift(fa).map(f);
+      }
+    };
+
     private ProtocolF() {}
+
+    abstract <R> ProtocolF<R> map(Function<T, R> f);
+
+    abstract <R> R fold(Function<T, R> justReturnCase);
 
     static final class JustReturn<T> extends ProtocolF<T> {
       final T value;
 
       JustReturn(T value) {
         this.value = value;
+      }
+
+      @Override
+      <R> JustReturn<R> map(Function<T, R> f) {
+        return new JustReturn<>(f.apply(value));
+      }
+
+      @Override
+      <R> R fold(Function<T, R> justReturnCase) {
+        return justReturnCase.apply(value);
+      }
+    }
+  }
+
+  static abstract class SocketF<T> implements Parametrized<SocketF, T> {
+    static <T> SocketF<T> lift(Parametrized<SocketF, T> par) {
+      return (SocketF<T>) par;
+    }
+
+    static final Functor<SocketF> FUNCTOR = new Functor<SocketF>() {
+      @Override
+      public <T, R> Parametrized<SocketF, R> map(Parametrized<SocketF, T> fa, Function<T, R> f) {
+        return lift(fa).map(f);
+      }
+    };
+
+    private SocketF() {}
+
+    abstract <R> SocketF<R> map(Function<T, R> f);
+
+    abstract <R> R fold(Function<T, R> justReturnCase);
+
+    static final class JustReturn<T> extends SocketF<T> {
+      final T value;
+
+      JustReturn(T value) {
+        this.value = value;
+      }
+
+      @Override
+      <R> JustReturn<R> map(Function<T, R> f) {
+        return new JustReturn<>(f.apply(value));
+      }
+
+      @Override
+      <R> R fold(Function<T, R> justReturnCase) {
+        return justReturnCase.apply(value);
       }
     }
   }
@@ -384,18 +437,48 @@ public class BankingExample {
     }
   };
 
+  static final Interpreter<BankingF, ProtocolF> bankingProtocol = new Interpreter<BankingF, ProtocolF>() {
+    @Override
+    public <T> Parametrized<Parametrized<Free, ProtocolF>, T> apply(Parametrized<BankingF, T> fa) {
+      return BankingF.lift(fa).foldT(
+          accounts -> justReturn(accounts.next.apply(ImmutableList.of(new Account("Foo"), new Account("Bar")))),
+          balance -> justReturn(balance.next.apply(new Amount(10000))),
+          transfer -> justReturn(transfer.next.apply(new TransferResult(Either.left(new Error("Ooops"))))),
+          withdraw -> justReturn(withdraw.next.apply(new Amount(10000 - withdraw.amount.value)))
+      );
+    }
+
+    private <T> Free<ProtocolF, T> justReturn(T apply) {
+      return Free.liftF(ProtocolF.FUNCTOR, new ProtocolF.JustReturn<>(apply));
+    }
+  };
+
+  static final Interpreter<ProtocolF, SocketF> protocolSocket = new Interpreter<ProtocolF, SocketF>() {
+    @Override
+    public <T> Parametrized<Parametrized<Free, SocketF>, T> apply(Parametrized<ProtocolF, T> fa) {
+      return ProtocolF.lift(fa).fold(a -> Free.liftF(SocketF.FUNCTOR, new SocketF.JustReturn<>(a)));
+    }
+  };
+
+  static final Natural<SocketF, Task> execSocket = new Natural<SocketF, Task>() {
+    @Override
+    public <T> Parametrized<Task, T> apply(Parametrized<SocketF, T> fa) {
+      return SocketF.lift(fa).fold(x -> Task.delay(() -> { System.out.println(x); return x; }));
+    }
+  };
+
   static final Natural<BankingF, Task> execBanking = new Natural<BankingF, Task>() {
     @Override
     public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
-      return Free.lift(
-          new Halt.FreeHaltOps<>(
-              LoggingF.FUNCTOR,
-              Free.lift(
-                  bankingLogging.apply(BankingF.lift(fa))))
-              .unhalt()
-              .<T>map(v -> null)
-              .foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile))
-          .foldMap(FileF.FUNCTOR, Task.MONAD, execFile);
+      BankingF<T> banking = BankingF.lift(fa);
+      Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(bankingLogging.apply(banking));
+      Free<LoggingF, T> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging).map(v -> null);
+      Free<FileF, T> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile));
+      return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, execFile)).flatMap(v -> {
+        Free<ProtocolF, T> protocol = Free.lift(bankingProtocol.apply(banking));
+        Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), protocolSocket));
+        return Task.lift(socket.foldMap(SocketF.FUNCTOR, Task.MONAD, execSocket));
+      });
     }
   };
 
