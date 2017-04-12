@@ -199,6 +199,43 @@ public class BankingExample {
     }
   }
 
+  abstract static class LoggingF<T> implements Generic<LoggingF, T> {
+    static <T> LoggingF<T> lift(Generic<LoggingF, T> gen) {
+      return (LoggingF<T>) gen;
+    }
+
+    <R> R foldT(Function<Log<T>, R> logCase) {
+      if (getClass().equals(Log.class)) {
+        return logCase.apply((Log<T>) this);
+      }
+      throw new AssertionError();
+    }
+
+    static Free<LoggingF, Void> log(String s) {
+      return Free.liftF(FUNCTOR, new Log<>(s, Function.identity()));
+    }
+
+    static Functor<LoggingF> FUNCTOR = new Functor<LoggingF>() {
+      @Override
+      public <T, R> Generic<LoggingF, R> map(Generic<LoggingF, T> fa, Function<T, R> f) {
+        LoggingF<T> lift = lift(fa);
+        return lift.foldT(
+            log -> new Log<>(log.s, v -> f.apply(log.next.apply(v)))
+        );
+      }
+    };
+  }
+
+  static final class Log<T> extends LoggingF<T> {
+    final String s;
+    final Function<Void, T> next;
+
+    Log(String s, Function<Void, T> next) {
+      this.s = s;
+      this.next = next;
+    }
+  }
+
   static <F> Generic<F, Amount> program(Monad<F> M, Banking<F> B) {
     return M.flatMap(
         B.accounts(), as -> M.flatMap(

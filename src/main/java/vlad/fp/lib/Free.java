@@ -61,9 +61,9 @@ public abstract class Free<F, T> implements Generic2<Free, F, T> {
     );
   }
 
-  public final <G> Generic<G, T> foldMap(final Natural<F, G> f, final Functor<F> F, final Monad<G> G){
+  public final <G> Generic<G, T> foldMap(Functor<F> F, Monad<G> G, Natural<F, G> f){
     return resume(F).fold(
-        left -> G.flatMap(f.apply(left), x -> x.foldMap(f, F, G)),
+        left -> G.flatMap(f.apply(left), x -> x.foldMap(F, G, f)),
         right -> G.point(() -> right)
     );
   }

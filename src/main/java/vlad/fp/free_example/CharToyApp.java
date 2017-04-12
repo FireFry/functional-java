@@ -8,7 +8,7 @@ import vlad.fp.lib.Free;
 import vlad.fp.lib.generic.Generic;
 import vlad.fp.lib.Monad;
 
-public final class FreeApp {
+public final class CharToyApp {
 
   public static void main(final String[] args){
     final Free<CharToy, Void> program =
