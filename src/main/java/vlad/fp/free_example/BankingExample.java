@@ -382,10 +382,12 @@ public class BankingExample {
       return appendCase.apply((AppendToFile<T>) this);
     }
 
+    abstract <R> FileF<R> map(Function<T, R> f);
+
     static Functor<FileF> FUNCTOR = new Functor<FileF>() {
       @Override
       public <T, R> Parametrized<FileF, R> map(Parametrized<FileF, T> fa, Function<T, R> f) {
-        return lift(fa).foldT(append -> new AppendToFile<>(append.fileName, append.string));
+        return lift(fa).map(f);
       }
     };
 
@@ -396,6 +398,11 @@ public class BankingExample {
       AppendToFile(String fileName, String string) {
         this.fileName = fileName;
         this.string = string;
+      }
+
+      @Override
+      <R> FileF<R> map(Function<T, R> f) {
+        return new AppendToFile<>(fileName, string);
       }
     }
   }
