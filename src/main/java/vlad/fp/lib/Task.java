@@ -2,12 +2,18 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Parametrized;
 
 import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-public final class Task<T> {
+public final class Task<T> implements Parametrized<Task, T> {
+
+  public static <T> Task<T> lift(Parametrized<Task, T> par) {
+    return (Task<T>) par;
+  }
+
   private final Future<Either<Throwable, T>> future;
 
   public static <T> Task<T> of(Future<Either<Throwable, T>> future) {
@@ -133,4 +139,17 @@ public final class Task<T> {
   public static <T> Task<T> scheduleF(Supplier<Task<T>> supplier, Duration delay, ScheduledExecutorService pool) {
     return join(schedule(supplier, delay, pool));
   }
+
+  public static final Monad<Task> MONAD = new Monad<Task>() {
+    @Override
+    public <T> Parametrized<Task, T> point(Supplier<T> a) {
+      return Task.delay(a);
+    }
+
+    @Override
+    public <T, R> Parametrized<Task, R> flatMap(Parametrized<Task, T> fa, Function<T, Parametrized<Task, R>> f) {
+      return lift(fa).flatMap(x -> Task.lift(f.apply(x)));
+    }
+  };
+
 }

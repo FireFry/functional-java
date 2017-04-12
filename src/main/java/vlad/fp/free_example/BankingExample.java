@@ -4,6 +4,7 @@ import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
 import vlad.fp.lib.Natural;
+import vlad.fp.lib.Task;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;
 import vlad.fp.lib.higher.Parametrized;
@@ -19,6 +20,11 @@ public class BankingExample {
     Amount(int value) {
       this.value = value;
     }
+
+    @Override
+    public String toString() {
+      return String.valueOf(value);
+    }
   }
 
   static final class Account {
@@ -26,6 +32,11 @@ public class BankingExample {
 
     Account(String id) {
       this.id = id;
+    }
+
+    @Override
+    public String toString() {
+      return id;
     }
   }
 
@@ -43,6 +54,11 @@ public class BankingExample {
     From(Account account) {
       this.account = account;
     }
+
+    @Override
+    public String toString() {
+      return account.toString();
+    }
   }
 
   static final class To {
@@ -50,6 +66,11 @@ public class BankingExample {
 
     To(Account account) {
       this.account = account;
+    }
+
+    @Override
+    public String toString() {
+      return account.toString();
     }
   }
 
@@ -247,19 +268,84 @@ public class BankingExample {
     }
   }
 
+  interface Interpreter<F, G> extends Natural<F,Parametrized<Free,G>> {
+
+  }
+
   static abstract class LoggingF<T> implements Parametrized<LoggingF, T> {
     private LoggingF() {}
 
-    static final class Log extends LoggingF<Void> {
+    static <T> LoggingF<T> lift(Parametrized<LoggingF, T> par) {
+      return (LoggingF<T>) par;
+    }
+
+    <R> R foldT(Function<Log, R> logCase) {
+      return logCase.apply((Log) this);
+    }
+
+    static final Functor<LoggingF> FUNCTOR = new Functor<LoggingF>() {
+      @Override
+      public <T, R> Parametrized<LoggingF, R> map(Parametrized<LoggingF, T> fa, Function<T, R> f) {
+        return lift(fa).map(f);
+      }
+    };
+
+    protected abstract <R> LoggingF<R> map(Function<T, R> f);
+
+    static final class Log<T> extends LoggingF<T> {
       final String msg;
 
       Log(String msg) {
         this.msg = msg;
       }
+
+      @Override
+      protected <R> LoggingF<R> map(Function<T, R> f) {
+        return new Log<>(msg);
+      }
     }
   }
 
-  interface Interpreter<F, G> extends Natural<F,Parametrized<Free,G>> {}
+  static abstract class ProtocolF<T> implements Parametrized<ProtocolF, T> {
+    private ProtocolF() {}
+
+    static final class JustReturn<T> extends ProtocolF<T> {
+      final T value;
+
+      JustReturn(T value) {
+        this.value = value;
+      }
+    }
+  }
+
+  static abstract class FileF<T> implements Parametrized<FileF, T> {
+    static <T> FileF<T> lift(Parametrized<FileF, T> par) {
+      return (FileF<T>) par;
+    }
+
+    private FileF() {}
+
+    <R> R foldT(Function<AppendToFile<T>, R> appendCase) {
+      return appendCase.apply((AppendToFile<T>) this);
+    }
+
+    static Functor<FileF> FUNCTOR = new Functor<FileF>() {
+      @Override
+      public <T, R> Parametrized<FileF, R> map(Parametrized<FileF, T> fa, Function<T, R> f) {
+        return lift(fa).foldT(append -> new AppendToFile<>(append.fileName, append.string));
+      }
+    };
+
+    static final class AppendToFile<T> extends FileF<T> {
+      final String fileName;
+      final String string;
+
+      AppendToFile(String fileName, String string) {
+        this.fileName = fileName;
+        this.string = string;
+      }
+    }
+  }
 
   static final Interpreter<BankingF, Parametrized<Halt, LoggingF>> bankingLogging = new Interpreter<BankingF, Parametrized<Halt, LoggingF>>() {
     <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
@@ -277,8 +363,45 @@ public class BankingExample {
     }
   };
 
-  public static void main(String[] args) {
+  static final Interpreter<LoggingF, FileF> loggingFile = new Interpreter<LoggingF, FileF>() {
+    @Override
+    public <T> Free<FileF, T> apply(Parametrized<LoggingF, T> fa) {
+      return LoggingF.lift(fa).foldT(
+          log -> Free.liftF(FileF.FUNCTOR, new FileF.AppendToFile<>("app.log", log.msg))
+      );
+    }
+  };
 
+  static final Natural<FileF, Task> execFile = new Natural<FileF, Task>() {
+    @Override
+    public <T> Task<T> apply(Parametrized<FileF, T> fa) {
+      return FileF.lift(fa).foldT(
+          append -> Task.delay(() -> {
+            System.out.println("Writing to " + append.fileName + ": " + append.string);
+            return null;
+          })
+      );
+    }
+  };
+
+  static final Natural<BankingF, Task> execBanking = new Natural<BankingF, Task>() {
+    @Override
+    public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
+      return Free.lift(
+          new Halt.FreeHaltOps<>(
+              LoggingF.FUNCTOR,
+              Free.lift(
+                  bankingLogging.apply(BankingF.lift(fa))))
+              .unhalt()
+              .<T>map(v -> null)
+              .foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile))
+          .foldMap(FileF.FUNCTOR, Task.MONAD, execFile);
+    }
+  };
+
+  public static void main(String[] args) {
+    Task<Amount> task = Task.lift(bankingFProgram().foldMap(BankingF.FUNCTOR, Task.MONAD, execBanking));
+    task.run();
   }
 
 }
