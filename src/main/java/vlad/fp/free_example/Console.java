@@ -1,11 +1,11 @@
 package vlad.fp.free_example;
 
-import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.higher.Parametrized;
 
 public interface Console<F> {
 
-  Generic<F, String> readLine();
+  Parametrized<F, String> readLine();
 
-  Generic<F, Void> writeLine(String s);
+  Parametrized<F, Void> writeLine(String s);
 
 }

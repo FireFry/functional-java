@@ -1,13 +1,13 @@
 package vlad.fp.free_example;
 
 import vlad.fp.lib.Free;
-import vlad.fp.lib.functor.Functor;
-import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.higher.Parametrized;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Function2;
 
-abstract class CharToy<A> implements Generic<CharToy, A> {
-  public static <R> CharToy<R> lift(Generic<CharToy, R> l) {
+abstract class CharToy<A> implements Parametrized<CharToy, A> {
+  public static <R> CharToy<R> lift(Parametrized<CharToy, R> l) {
     return (CharToy<R>) l;
   }
 
@@ -31,8 +31,8 @@ abstract class CharToy<A> implements Generic<CharToy, A> {
   public static final Functor<CharToy> functor =
     new Functor<CharToy>() {
       @Override
-      public <X, Y> Generic<CharToy, Y> map(
-          Generic<CharToy, X> fa,
+      public <X, Y> Parametrized<CharToy, Y> map(
+          Parametrized<CharToy, X> fa,
           Function<X, Y> f) {
         return (lift(fa)).map(f);
       }

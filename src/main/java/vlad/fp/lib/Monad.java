@@ -2,17 +2,17 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Supplier;
 import vlad.fp.lib.function.Function;
-import vlad.fp.lib.functor.Functor;
-import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.higher.Parametrized;
 
 public interface Monad<F> extends Functor<F> {
 
-  <T> Generic<F, T> point(final Supplier<T> a);
+  <T> Parametrized<F, T> point(final Supplier<T> a);
 
-  <T, R> Generic<F, R> flatMap(Generic<F, T> fa, Function<T, Generic<F, R>> f);
+  <T, R> Parametrized<F, R> flatMap(Parametrized<F, T> fa, Function<T, Parametrized<F, R>> f);
 
   @Override
-  default <T, R> Generic<F, R> map(Generic<F, T> fa, Function<T, R> f){
+  default <T, R> Parametrized<F, R> map(Parametrized<F, T> fa, Function<T, R> f){
     return flatMap(fa, a -> point(() -> f.apply(a)));
   }
 

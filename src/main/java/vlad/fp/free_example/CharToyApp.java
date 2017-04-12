@@ -5,7 +5,7 @@ import static vlad.fp.free_example.CharToy.done;
 import static vlad.fp.free_example.CharToy.output;
 
 import vlad.fp.lib.Free;
-import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.higher.Parametrized;
 import vlad.fp.lib.Monad;
 
 public final class CharToyApp {
@@ -31,7 +31,7 @@ public final class CharToyApp {
     );
   }
 
-  static <F> Generic<F, Void> myMonadicProgram(Console<F> console, Monad<F> M) {
+  static <F> Parametrized<F, Void> myMonadicProgram(Console<F> console, Monad<F> M) {
     return M.flatMap(
         console.readLine(), a ->
         console.writeLine("You entered: " + a));

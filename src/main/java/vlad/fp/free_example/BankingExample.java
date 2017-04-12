@@ -4,8 +4,8 @@ import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
 import vlad.fp.lib.function.Function;
-import vlad.fp.lib.functor.Functor;
-import vlad.fp.lib.generic.Generic;
+import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.higher.Parametrized;
 import vlad.fp.lib.tuple.Tuple2;
 
 import java.util.List;
@@ -60,21 +60,21 @@ public class BankingExample {
     }
   }
 
-  interface Banking<F> extends Generic<Banking, F> {
+  interface Banking<F> extends Parametrized<Banking, F> {
 
-    Generic<F, List<Account>> accounts();
+    Parametrized<F, List<Account>> accounts();
 
-    Generic<F, Amount> balance(Account account);
+    Parametrized<F, Amount> balance(Account account);
 
-    Generic<F, TransferResult> transfer(Amount amount, From from, To to);
+    Parametrized<F, TransferResult> transfer(Amount amount, From from, To to);
 
-    Generic<F, Amount> withdraw(Amount amount);
+    Parametrized<F, Amount> withdraw(Amount amount);
 
   }
 
-  abstract static class BankingF<T> implements Generic<BankingF, T> {
-    static <T> BankingF<T> lift(Generic<BankingF, T> gen) {
-      return (BankingF<T>) gen;
+  abstract static class BankingF<T> implements Parametrized<BankingF, T> {
+    static <T> BankingF<T> lift(Parametrized<BankingF, T> par) {
+      return (BankingF<T>) par;
     }
 
     private BankingF() {}
@@ -100,29 +100,29 @@ public class BankingExample {
 
     static final Banking<BankingF> BANKING = new Banking<BankingF>() {
       @Override
-      public Generic<BankingF, List<Account>> accounts() {
+      public Parametrized<BankingF, List<Account>> accounts() {
         return new Accounts<>(Function.identity());
       }
 
       @Override
-      public Generic<BankingF, Amount> balance(Account account) {
+      public Parametrized<BankingF, Amount> balance(Account account) {
         return new Balance<>(account, Function.identity());
       }
 
       @Override
-      public Generic<BankingF, TransferResult> transfer(Amount amount, From from, To to) {
+      public Parametrized<BankingF, TransferResult> transfer(Amount amount, From from, To to) {
         return new Transfer<>(amount, from, to, Function.identity());
       }
 
       @Override
-      public Generic<BankingF, Amount> withdraw(Amount amount) {
+      public Parametrized<BankingF, Amount> withdraw(Amount amount) {
         return new Withdraw<>(amount, Function.identity());
       }
     };
 
     static final Functor<BankingF> FUNCTOR = new Functor<BankingF>() {
       @Override
-      public <T, R> Generic<BankingF, R> map(Generic<BankingF, T> fa, Function<T, R> f) {
+      public <T, R> Parametrized<BankingF, R> map(Parametrized<BankingF, T> fa, Function<T, R> f) {
         return lift(fa).foldT(
             accounts -> new Accounts<>(list -> f.apply(accounts.next.apply(list))),
             balance -> new Balance<>(balance.account, amount -> f.apply(balance.next.apply(amount))),
@@ -132,8 +132,8 @@ public class BankingExample {
       }
     };
 
-    static <F> Banking<Generic<Free, F>> bankingFree(Functor<F> F, Banking<F> B) {
-      return new Banking<Generic<Free, F>>() {
+    static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> F, Banking<F> B) {
+      return new Banking<Parametrized<Free, F>>() {
         @Override
         public Free<F, List<Account>> accounts() {
           return Free.liftF(F, B.accounts());
@@ -199,9 +199,9 @@ public class BankingExample {
     }
   }
 
-  abstract static class LoggingF<T> implements Generic<LoggingF, T> {
-    static <T> LoggingF<T> lift(Generic<LoggingF, T> gen) {
-      return (LoggingF<T>) gen;
+  abstract static class LoggingF<T> implements Parametrized<LoggingF, T> {
+    static <T> LoggingF<T> lift(Parametrized<LoggingF, T> par) {
+      return (LoggingF<T>) par;
     }
 
     <R> R foldT(Function<Log<T>, R> logCase) {
@@ -217,7 +217,7 @@ public class BankingExample {
 
     static Functor<LoggingF> FUNCTOR = new Functor<LoggingF>() {
       @Override
-      public <T, R> Generic<LoggingF, R> map(Generic<LoggingF, T> fa, Function<T, R> f) {
+      public <T, R> Parametrized<LoggingF, R> map(Parametrized<LoggingF, T> fa, Function<T, R> f) {
         LoggingF<T> lift = lift(fa);
         return lift.foldT(
             log -> new Log<>(log.s, v -> f.apply(log.next.apply(v)))
@@ -236,7 +236,7 @@ public class BankingExample {
     }
   }
 
-  static <F> Generic<F, Amount> program(Monad<F> M, Banking<F> B) {
+  static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
     return M.flatMap(
         B.accounts(), as -> M.flatMap(
         B.balance(as.get(0)), b -> M.flatMap(
