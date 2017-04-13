@@ -11,6 +11,6 @@ public enum ProtocolToSocket implements Interpreter<ProtocolF, SocketF> {
 
   @Override
   public <T> Parametrized<Parametrized<Free, SocketF>, T> apply(Parametrized<ProtocolF, T> fa) {
-    return ProtocolF.lift(fa).fold(a -> Free.liftF(SocketF.FUNCTOR, new JustReturn<>(a)));
+    return ProtocolF.lift(fa).foldT(a -> Free.liftF(SocketF.FUNCTOR, new JustReturn<>(a.value, a.next)));
   }
 }

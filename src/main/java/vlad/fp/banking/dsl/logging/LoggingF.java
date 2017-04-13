@@ -11,8 +11,8 @@ public abstract class LoggingF<T> implements Parametrized<LoggingF, T> {
 
   LoggingF() {}
 
-  public <R> R foldT(Function<Log, R> logCase) {
-    return logCase.apply((Log) this);
+  public <R> R foldT(Function<Log<T>, R> logCase) {
+    return logCase.apply((Log<T>) this);
   }
 
   public abstract <R> LoggingF<R> map(Function<T, R> f);

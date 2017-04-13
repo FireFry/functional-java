@@ -1,5 +1,6 @@
 package vlad.fp.banking.dsl.protocol;
 
+import vlad.fp.lib.Free;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;
 import vlad.fp.lib.higher.Parametrized;
@@ -11,9 +12,13 @@ public abstract class ProtocolF<T> implements Parametrized<ProtocolF, T> {
 
   ProtocolF() {}
 
+  public static <T> Free<ProtocolF, T> justReturn(T apply) {
+    return Free.liftF(FUNCTOR, new JustReturn<>(apply, v -> apply));
+  }
+
   public abstract <R> ProtocolF<R> map(Function<T, R> f);
 
-  public abstract <R> R fold(Function<T, R> justReturnCase);
+  public abstract <R> R foldT(Function<JustReturn<T>, R> justReturnCase);
 
   public static final Functor<ProtocolF> FUNCTOR = new Functor<ProtocolF>() {
     @Override
