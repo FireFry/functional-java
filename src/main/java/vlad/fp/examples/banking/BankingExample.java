@@ -1,15 +1,18 @@
 package vlad.fp.examples.banking;
 
+import static vlad.fp.examples.banking.dsl.model.ModelFactory.account;
+import static vlad.fp.examples.banking.dsl.model.ModelFactory.amount;
+import static vlad.fp.examples.banking.dsl.model.ModelFactory.from;
+import static vlad.fp.examples.banking.dsl.model.ModelFactory.to;
+
 import vlad.fp.examples.banking.dsl.banking.Banking;
 import vlad.fp.examples.banking.dsl.banking.BankingF;
-import vlad.fp.examples.banking.dsl.model.Account;
 import vlad.fp.examples.banking.dsl.model.Amount;
-import vlad.fp.examples.banking.dsl.model.From;
-import vlad.fp.examples.banking.dsl.model.To;
 import vlad.fp.examples.banking.exec.ExecBanking;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
 import vlad.fp.lib.Task;
+import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Parametrized;
 
 public class BankingExample {
@@ -17,8 +20,8 @@ public class BankingExample {
     return m.flatMap(
         banking.accounts(), as -> m.flatMap(
         banking.balance(as.get(0)), b -> m.flatMap(
-        banking.transfer(new Amount(123), new From(new Account("Foo")), new To(new Account("Bar"))), x -> m.map(
-        banking.withdraw(new Amount(5)), ignored -> b))));
+        banking.transfer(amount(123), from(account("Foo")), to(account("Bar"))), x -> m.map(
+        banking.withdraw(amount(5)), Function.identity()))));
   }
 
   private static Free<BankingF, Amount> bankingFProgram() {
