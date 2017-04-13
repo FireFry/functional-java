@@ -70,8 +70,4 @@ public abstract class Transformers {
       }
     }));
   }
-
-  public static <T> Future<Seq<T>> liftFuture(Seq<Future<T>> seq) {
-    return liftFuture(seq.toList()).map(Seq::wrap);
-  }
 }

@@ -16,13 +16,6 @@ public abstract class Utils {
     return null;
   }
 
-  public static Supplier<Void> voidS(Runnable runnable) {
-    return () -> {
-      runnable.run();
-      return null;
-    };
-  }
-
   public static <T> Function<T, Void> voidF(Consumer<T> consumer) {
     return o -> {
       consumer.accept(o);
@@ -31,7 +24,7 @@ public abstract class Utils {
   }
 
   public static Void unmatched() {
-    throw new AssertionError();
+    throw new AssertionError("unmatched");
   }
 
   public static Runnable logErrors(Runnable runnable) {
