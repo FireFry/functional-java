@@ -9,7 +9,7 @@ import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum BankingToLogging implements Interpreter<BankingF, Parametrized<Halt, LoggingF>> {
-  INSTANCE;
+  INTERPRETER;
 
   private static <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
     return Free.liftF(Halt.functor(), new Halt<>(new Log<>(msg, Function.identity())));

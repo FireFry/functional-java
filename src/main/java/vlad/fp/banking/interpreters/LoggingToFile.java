@@ -7,7 +7,7 @@ import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum LoggingToFile implements Interpreter<LoggingF, FileF> {
-  INSTANCE;
+  INTERPRETER;
 
   @Override
   public <T> Free<FileF, T> apply(Parametrized<LoggingF, T> fa) {

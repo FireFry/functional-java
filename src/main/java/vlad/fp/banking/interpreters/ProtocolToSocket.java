@@ -7,7 +7,7 @@ import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum ProtocolToSocket implements Interpreter<ProtocolF, SocketF> {
-  INSTANCE;
+  INTERPRETER;
 
   @Override
   public <T> Parametrized<Parametrized<Free, SocketF>, T> apply(Parametrized<ProtocolF, T> fa) {
