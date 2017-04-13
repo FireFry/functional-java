@@ -13,7 +13,7 @@ import vlad.fp.lib.Task;
 import vlad.fp.lib.higher.Parametrized;
 
 public class BankingExample {
-  static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
+  private static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
     return M.flatMap(
         B.accounts(), as -> M.flatMap(
         B.balance(as.get(0)), b -> M.flatMap(
@@ -21,7 +21,7 @@ public class BankingExample {
         B.withdraw(new Amount(5)), ignored -> b))));
   }
 
-  static Free<BankingF, Amount> bankingFProgram() {
+  private static Free<BankingF, Amount> bankingFProgram() {
     return Free.lift(program(Free.freeMonad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
   }
 
