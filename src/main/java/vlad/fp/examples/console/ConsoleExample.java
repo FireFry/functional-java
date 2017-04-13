@@ -17,9 +17,9 @@ public class ConsoleExample {
 
   private static <F> Parametrized<F, String> program(Monad<F> m, Console<F> console) {
     return m.flatMap(
-        console.writeLine("Enter first line"), u1 -> m.flatMap(
+        console.writeLine("Enter the first line:"), u1 -> m.flatMap(
         console.readLine(), firstLine -> m.flatMap(
-        console.writeLine("Enter second line"), u2 -> m.flatMap(
+        console.writeLine("Enter the second line:"), u2 -> m.flatMap(
         console.readLine(), secondLine -> m.map(
         console.writeLine("You entered: \"" + firstLine + "\" and \"" + secondLine + "\""), Function.identity())))));
   }
