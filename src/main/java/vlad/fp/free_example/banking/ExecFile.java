@@ -7,7 +7,7 @@ import vlad.fp.lib.Task;
 import vlad.fp.lib.Unit;
 import vlad.fp.lib.higher.Parametrized;
 
-class ExecFile implements Natural<FileF, Task> {
+public class ExecFile implements Natural<FileF, Task> {
   @Override
   public <T> Task<T> apply(Parametrized<FileF, T> fa) {
     return FileF.lift(fa).foldT(

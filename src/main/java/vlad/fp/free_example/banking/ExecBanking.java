@@ -12,7 +12,7 @@ import vlad.fp.lib.Task;
 import vlad.fp.lib.Unit;
 import vlad.fp.lib.higher.Parametrized;
 
-class ExecBanking implements Natural<BankingF, Task> {
+public class ExecBanking implements Natural<BankingF, Task> {
   private static final Interpreter<BankingF, Parametrized<Halt, LoggingF>> bankingLogging = new BankingLogging();
   private static final Interpreter<LoggingF, FileF> loggingFile = new LoggingFile();
   private static final Natural<FileF, Task> execFile = new ExecFile();

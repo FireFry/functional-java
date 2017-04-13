@@ -12,7 +12,7 @@ import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-class BankingProtocol implements Interpreter<BankingF, ProtocolF> {
+public class BankingProtocol implements Interpreter<BankingF, ProtocolF> {
   @Override
   public <T> Parametrized<Parametrized<Free, ProtocolF>, T> apply(Parametrized<BankingF, T> fa) {
     return BankingF.lift(fa).foldT(
@@ -23,7 +23,7 @@ class BankingProtocol implements Interpreter<BankingF, ProtocolF> {
     );
   }
 
-  private <T> Free<ProtocolF, T> justReturn(T apply) {
+  private static <T> Free<ProtocolF, T> justReturn(T apply) {
     return Free.liftF(ProtocolF.FUNCTOR, new JustReturn<>(apply));
   }
 }
