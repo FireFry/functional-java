@@ -1,9 +1,9 @@
 package vlad.fp.banking.exec;
 
-import vlad.fp.banking.interpreters.BankingLogging;
-import vlad.fp.banking.interpreters.BankingProtocol;
-import vlad.fp.banking.interpreters.LoggingFile;
-import vlad.fp.banking.interpreters.ProtocolSocket;
+import vlad.fp.banking.interpreters.BankingToLogging;
+import vlad.fp.banking.interpreters.BankingToProtocol;
+import vlad.fp.banking.interpreters.LoggingToFile;
+import vlad.fp.banking.interpreters.ProtocolToSocket;
 import vlad.fp.banking.dsl.banking.BankingF;
 import vlad.fp.banking.dsl.file.FileF;
 import vlad.fp.banking.dsl.halt.Halt;
@@ -22,12 +22,12 @@ public enum ExecBanking implements Natural<BankingF, Task> {
   @Override
   public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
     BankingF<T> banking = BankingF.lift(fa);
-    Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(BankingLogging.INSTANCE.apply(banking));
+    Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(BankingToLogging.INSTANCE.apply(banking));
     Free<LoggingF, Unit> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging);
-    Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), LoggingFile.INSTANCE));
+    Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), LoggingToFile.INSTANCE));
     return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, ExecFile.INSTANCE)).flatMap(v -> {
-      Free<ProtocolF, T> protocol = Free.lift(BankingProtocol.INSTANCE.apply(banking));
-      Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), ProtocolSocket.INSTANCE));
+      Free<ProtocolF, T> protocol = Free.lift(BankingToProtocol.INSTANCE.apply(banking));
+      Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), ProtocolToSocket.INSTANCE));
       return Task.lift(socket.foldMap(SocketF.FUNCTOR, Task.MONAD, ExecSocket.INSTANCE));
     });
   }

@@ -6,7 +6,7 @@ import vlad.fp.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-public enum ProtocolSocket implements Interpreter<ProtocolF, SocketF> {
+public enum ProtocolToSocket implements Interpreter<ProtocolF, SocketF> {
   INSTANCE;
 
   @Override

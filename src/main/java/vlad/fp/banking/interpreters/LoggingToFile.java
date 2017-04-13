@@ -6,7 +6,7 @@ import vlad.fp.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-public enum LoggingFile implements Interpreter<LoggingF, FileF> {
+public enum LoggingToFile implements Interpreter<LoggingF, FileF> {
   INSTANCE;
 
   @Override
