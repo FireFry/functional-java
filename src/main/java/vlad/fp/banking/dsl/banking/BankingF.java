@@ -62,7 +62,7 @@ public abstract class BankingF<T> implements Parametrized<BankingF, T> {
 
   public static final Functor<BankingF> FUNCTOR = new Functor<BankingF>() {
     @Override
-    public <T, R> Parametrized<BankingF, R> map(Parametrized<BankingF, T> fa, Function<T, R> f) {
+    public <T, R> BankingF<R> map(Parametrized<BankingF, T> fa, Function<T, R> f) {
       return lift(fa).foldT(
           accounts -> new Accounts<>(list -> f.apply(accounts.next.apply(list))),
           balance -> new Balance<>(balance.account, amount -> f.apply(balance.next.apply(amount))),
@@ -72,26 +72,26 @@ public abstract class BankingF<T> implements Parametrized<BankingF, T> {
     }
   };
 
-  public static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> F, Banking<F> B) {
+  public static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> functor, Banking<F> banking) {
     return new Banking<Parametrized<Free, F>>() {
       @Override
       public Free<F, List<Account>> accounts() {
-        return Free.liftF(F, B.accounts());
+        return Free.liftF(functor, banking.accounts());
       }
 
       @Override
       public Free<F, Amount> balance(Account account) {
-        return Free.liftF(F, B.balance(account));
+        return Free.liftF(functor, banking.balance(account));
       }
 
       @Override
       public Free<F, TransferResult> transfer(Amount amount, From from, To to) {
-        return Free.liftF(F, B.transfer(amount, from, to));
+        return Free.liftF(functor, banking.transfer(amount, from, to));
       }
 
       @Override
       public Free<F, Amount> withdraw(Amount amount) {
-        return Free.liftF(F, B.withdraw(amount));
+        return Free.liftF(functor, banking.withdraw(amount));
       }
     };
   }

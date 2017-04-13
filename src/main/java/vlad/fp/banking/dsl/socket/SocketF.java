@@ -17,7 +17,7 @@ public abstract class SocketF<T> implements Parametrized<SocketF, T> {
 
   public static final Functor<SocketF> FUNCTOR = new Functor<SocketF>() {
     @Override
-    public <T, R> Parametrized<SocketF, R> map(Parametrized<SocketF, T> fa, Function<T, R> f) {
+    public <T, R> SocketF<R> map(Parametrized<SocketF, T> fa, Function<T, R> f) {
       return lift(fa).map(f);
     }
   };

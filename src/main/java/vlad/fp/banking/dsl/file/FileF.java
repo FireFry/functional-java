@@ -19,7 +19,7 @@ public abstract class FileF<T> implements Parametrized<FileF, T> {
 
   public static Functor<FileF> FUNCTOR = new Functor<FileF>() {
     @Override
-    public <T, R> Parametrized<FileF, R> map(Parametrized<FileF, T> fa, Function<T, R> f) {
+    public <T, R> FileF<R> map(Parametrized<FileF, T> fa, Function<T, R> f) {
       return lift(fa).map(f);
     }
   };

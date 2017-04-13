@@ -17,7 +17,7 @@ public abstract class ProtocolF<T> implements Parametrized<ProtocolF, T> {
 
   public static final Functor<ProtocolF> FUNCTOR = new Functor<ProtocolF>() {
     @Override
-    public <T, R> Parametrized<ProtocolF, R> map(Parametrized<ProtocolF, T> fa, Function<T, R> f) {
+    public <T, R> ProtocolF<R> map(Parametrized<ProtocolF, T> fa, Function<T, R> f) {
       return lift(fa).map(f);
     }
   };

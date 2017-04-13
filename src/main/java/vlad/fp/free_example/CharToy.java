@@ -31,9 +31,7 @@ abstract class CharToy<A> implements Parametrized<CharToy, A> {
   public static final Functor<CharToy> functor =
     new Functor<CharToy>() {
       @Override
-      public <X, Y> Parametrized<CharToy, Y> map(
-          Parametrized<CharToy, X> fa,
-          Function<X, Y> f) {
+      public <X, Y> Parametrized<CharToy, Y> map(Parametrized<CharToy, X> fa, Function<X, Y> f) {
         return (lift(fa)).map(f);
       }
     };
