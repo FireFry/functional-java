@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking;
+package vlad.fp.free_example.banking.banking;
 
 import vlad.fp.free_example.banking.model.Account;
 import vlad.fp.free_example.banking.model.Amount;
@@ -12,14 +12,14 @@ import vlad.fp.lib.higher.Parametrized;
 
 import java.util.List;
 
-abstract class BankingF<T> implements Parametrized<BankingF, T> {
-  static <T> BankingF<T> lift(Parametrized<BankingF, T> par) {
+public abstract class BankingF<T> implements Parametrized<BankingF, T> {
+  public static <T> BankingF<T> lift(Parametrized<BankingF, T> par) {
     return (BankingF<T>) par;
   }
 
   BankingF() {}
 
-  <R> R foldT(
+  public <R> R foldT(
       Function<Accounts<T>, R> accountsCase,
       Function<Balance<T>, R> balanceCase,
       Function<Transfer<T>, R> transferCase,
@@ -38,7 +38,7 @@ abstract class BankingF<T> implements Parametrized<BankingF, T> {
     throw new AssertionError();
   }
 
-  static final Banking<BankingF> BANKING = new Banking<BankingF>() {
+  public static final Banking<BankingF> BANKING = new Banking<BankingF>() {
     @Override
     public Parametrized<BankingF, List<Account>> accounts() {
       return new Accounts<>(Function.identity());
@@ -60,7 +60,7 @@ abstract class BankingF<T> implements Parametrized<BankingF, T> {
     }
   };
 
-  static final Functor<BankingF> FUNCTOR = new Functor<BankingF>() {
+  public static final Functor<BankingF> FUNCTOR = new Functor<BankingF>() {
     @Override
     public <T, R> Parametrized<BankingF, R> map(Parametrized<BankingF, T> fa, Function<T, R> f) {
       return lift(fa).foldT(
@@ -72,7 +72,7 @@ abstract class BankingF<T> implements Parametrized<BankingF, T> {
     }
   };
 
-  static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> F, Banking<F> B) {
+  public static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> F, Banking<F> B) {
     return new Banking<Parametrized<Free, F>>() {
       @Override
       public Free<F, List<Account>> accounts() {

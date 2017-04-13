@@ -1,6 +1,7 @@
 package vlad.fp.free_example.banking;
 
 import com.google.common.collect.ImmutableList;
+import vlad.fp.free_example.banking.banking.BankingF;
 import vlad.fp.free_example.banking.model.Account;
 import vlad.fp.free_example.banking.model.Amount;
 import vlad.fp.free_example.banking.model.Error;

@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking;
+package vlad.fp.free_example.banking.banking;
 
 import vlad.fp.free_example.banking.model.Account;
 import vlad.fp.free_example.banking.model.Amount;
@@ -9,7 +9,7 @@ import vlad.fp.lib.higher.Parametrized;
 
 import java.util.List;
 
-interface Banking<F> extends Parametrized<Banking, F> {
+public interface Banking<F> extends Parametrized<Banking, F> {
 
   Parametrized<F, List<Account>> accounts();
 

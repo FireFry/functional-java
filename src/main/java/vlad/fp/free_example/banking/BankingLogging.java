@@ -1,5 +1,6 @@
 package vlad.fp.free_example.banking;
 
+import vlad.fp.free_example.banking.banking.BankingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
