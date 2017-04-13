@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.model;
+package vlad.fp.free_example.banking.dsl.model;
 
 import vlad.fp.lib.Either;
 import vlad.fp.lib.tuple.Tuple2;

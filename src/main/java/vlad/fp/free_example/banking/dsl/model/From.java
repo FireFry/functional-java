@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.model;
+package vlad.fp.free_example.banking.dsl.model;
 
 public final class From {
   public final Account account;

@@ -1,10 +1,10 @@
-package vlad.fp.free_example.banking.banking;
+package vlad.fp.free_example.banking.dsl.banking;
 
-import vlad.fp.free_example.banking.model.Account;
-import vlad.fp.free_example.banking.model.Amount;
-import vlad.fp.free_example.banking.model.From;
-import vlad.fp.free_example.banking.model.To;
-import vlad.fp.free_example.banking.model.TransferResult;
+import vlad.fp.free_example.banking.dsl.model.Account;
+import vlad.fp.free_example.banking.dsl.model.Amount;
+import vlad.fp.free_example.banking.dsl.model.From;
+import vlad.fp.free_example.banking.dsl.model.To;
+import vlad.fp.free_example.banking.dsl.model.TransferResult;
 import vlad.fp.lib.higher.Parametrized;
 
 import java.util.List;

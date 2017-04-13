@@ -1,7 +1,7 @@
-package vlad.fp.free_example.banking.banking;
+package vlad.fp.free_example.banking.dsl.banking;
 
-import vlad.fp.free_example.banking.model.Account;
-import vlad.fp.free_example.banking.model.Amount;
+import vlad.fp.free_example.banking.dsl.model.Account;
+import vlad.fp.free_example.banking.dsl.model.Amount;
 import vlad.fp.lib.function.Function;
 
 public final class Balance<T> extends BankingF<T> {

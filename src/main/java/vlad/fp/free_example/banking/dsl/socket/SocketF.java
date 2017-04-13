@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.socket;
+package vlad.fp.free_example.banking.dsl.socket;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;

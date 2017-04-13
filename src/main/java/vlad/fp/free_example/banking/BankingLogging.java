@@ -1,9 +1,9 @@
 package vlad.fp.free_example.banking;
 
-import vlad.fp.free_example.banking.banking.BankingF;
-import vlad.fp.free_example.banking.halt.Halt;
-import vlad.fp.free_example.banking.logging.Log;
-import vlad.fp.free_example.banking.logging.LoggingF;
+import vlad.fp.free_example.banking.dsl.banking.BankingF;
+import vlad.fp.free_example.banking.dsl.halt.Halt;
+import vlad.fp.free_example.banking.dsl.logging.Log;
+import vlad.fp.free_example.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 

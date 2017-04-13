@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.halt;
+package vlad.fp.free_example.banking.dsl.halt;
 
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Unit;

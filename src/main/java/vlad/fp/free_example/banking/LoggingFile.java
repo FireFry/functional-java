@@ -1,8 +1,8 @@
 package vlad.fp.free_example.banking;
 
-import vlad.fp.free_example.banking.file.AppendToFile;
-import vlad.fp.free_example.banking.file.FileF;
-import vlad.fp.free_example.banking.logging.LoggingF;
+import vlad.fp.free_example.banking.dsl.file.AppendToFile;
+import vlad.fp.free_example.banking.dsl.file.FileF;
+import vlad.fp.free_example.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 

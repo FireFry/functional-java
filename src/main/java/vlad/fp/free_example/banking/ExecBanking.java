@@ -1,11 +1,11 @@
 package vlad.fp.free_example.banking;
 
-import vlad.fp.free_example.banking.banking.BankingF;
-import vlad.fp.free_example.banking.file.FileF;
-import vlad.fp.free_example.banking.halt.Halt;
-import vlad.fp.free_example.banking.logging.LoggingF;
-import vlad.fp.free_example.banking.protocol.ProtocolF;
-import vlad.fp.free_example.banking.socket.SocketF;
+import vlad.fp.free_example.banking.dsl.banking.BankingF;
+import vlad.fp.free_example.banking.dsl.file.FileF;
+import vlad.fp.free_example.banking.dsl.halt.Halt;
+import vlad.fp.free_example.banking.dsl.logging.LoggingF;
+import vlad.fp.free_example.banking.dsl.protocol.ProtocolF;
+import vlad.fp.free_example.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Natural;
 import vlad.fp.lib.Task;

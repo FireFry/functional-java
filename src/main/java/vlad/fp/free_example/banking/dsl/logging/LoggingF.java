@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.logging;
+package vlad.fp.free_example.banking.dsl.logging;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;

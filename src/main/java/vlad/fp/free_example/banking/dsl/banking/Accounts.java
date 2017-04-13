@@ -1,6 +1,6 @@
-package vlad.fp.free_example.banking.banking;
+package vlad.fp.free_example.banking.dsl.banking;
 
-import vlad.fp.free_example.banking.model.Account;
+import vlad.fp.free_example.banking.dsl.model.Account;
 import vlad.fp.lib.function.Function;
 
 import java.util.List;

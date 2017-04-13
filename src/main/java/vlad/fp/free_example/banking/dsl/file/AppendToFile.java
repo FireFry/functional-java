@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.file;
+package vlad.fp.free_example.banking.dsl.file;
 
 import vlad.fp.lib.function.Function;
 

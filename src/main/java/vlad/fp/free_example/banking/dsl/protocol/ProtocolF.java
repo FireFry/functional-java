@@ -1,4 +1,4 @@
-package vlad.fp.free_example.banking.protocol;
+package vlad.fp.free_example.banking.dsl.protocol;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;

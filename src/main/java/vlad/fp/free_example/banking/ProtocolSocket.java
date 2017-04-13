@@ -1,8 +1,8 @@
 package vlad.fp.free_example.banking;
 
-import vlad.fp.free_example.banking.protocol.ProtocolF;
-import vlad.fp.free_example.banking.socket.JustReturn;
-import vlad.fp.free_example.banking.socket.SocketF;
+import vlad.fp.free_example.banking.dsl.protocol.ProtocolF;
+import vlad.fp.free_example.banking.dsl.socket.JustReturn;
+import vlad.fp.free_example.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 

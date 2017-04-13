@@ -1,6 +1,6 @@
 package vlad.fp.free_example.banking;
 
-import vlad.fp.free_example.banking.socket.SocketF;
+import vlad.fp.free_example.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Natural;
 import vlad.fp.lib.Task;
 import vlad.fp.lib.higher.Parametrized;

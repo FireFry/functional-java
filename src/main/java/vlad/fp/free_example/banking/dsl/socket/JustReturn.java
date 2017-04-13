@@ -1,8 +1,8 @@
-package vlad.fp.free_example.banking.protocol;
+package vlad.fp.free_example.banking.dsl.socket;
 
 import vlad.fp.lib.function.Function;
 
-public final class JustReturn<T> extends ProtocolF<T> {
+public final class JustReturn<T> extends SocketF<T> {
   public final T value;
 
   public JustReturn(T value) {
