@@ -15,7 +15,7 @@ public enum BankingToProtocol implements Interpreter<BankingF, ProtocolF> {
   INSTANCE;
 
   @Override
-  public <T> Parametrized<Parametrized<Free, ProtocolF>, T> apply(Parametrized<BankingF, T> fa) {
+  public <T> Free<ProtocolF, T> apply(Parametrized<BankingF, T> fa) {
     return BankingF.lift(fa).foldT(
         accounts -> ProtocolF.justReturn(accounts.next.apply(ImmutableList.of(new Account("Foo"), new Account("Bar")))),
         balance -> ProtocolF.justReturn(balance.next.apply(new Amount(10000))),

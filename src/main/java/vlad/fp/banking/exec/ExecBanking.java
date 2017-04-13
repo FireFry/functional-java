@@ -21,12 +21,11 @@ public enum ExecBanking implements Natural<BankingF, Task> {
 
   @Override
   public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
-    BankingF<T> banking = BankingF.lift(fa);
-    Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(BankingToLogging.INSTANCE.apply(banking));
+    Free<Parametrized<Halt, LoggingF>, T> logging = BankingToLogging.INSTANCE.apply(BankingF.lift(fa));
     Free<LoggingF, Unit> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging);
     Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), LoggingToFile.INSTANCE));
     return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, ExecFile.INSTANCE)).flatMap(v -> {
-      Free<ProtocolF, T> protocol = Free.lift(BankingToProtocol.INSTANCE.apply(banking));
+      Free<ProtocolF, T> protocol = BankingToProtocol.INSTANCE.apply(BankingF.lift(fa));
       Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), ProtocolToSocket.INSTANCE));
       return Task.lift(socket.foldMap(SocketF.FUNCTOR, Task.MONAD, ExecSocket.INSTANCE));
     });

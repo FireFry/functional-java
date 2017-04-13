@@ -16,7 +16,7 @@ public enum BankingToLogging implements Interpreter<BankingF, Parametrized<Halt,
   }
 
   @Override
-  public <T> Parametrized<Parametrized<Free, Parametrized<Halt, LoggingF>>, T> apply(Parametrized<BankingF, T> fa) {
+  public <T> Free<Parametrized<Halt, LoggingF>, T> apply(Parametrized<BankingF, T> fa) {
     return BankingF.lift(fa).foldT(
         accounts -> log("Fetch accounts"),
         balance -> log("Fetch balance for account: " + balance.account),
