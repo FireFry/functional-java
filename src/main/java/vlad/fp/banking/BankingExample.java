@@ -9,13 +9,10 @@ import vlad.fp.banking.dsl.model.To;
 import vlad.fp.banking.exec.ExecBanking;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Monad;
-import vlad.fp.lib.Natural;
 import vlad.fp.lib.Task;
 import vlad.fp.lib.higher.Parametrized;
 
 public class BankingExample {
-  static final Natural<BankingF, Task> execBanking = new ExecBanking();
-
   static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
     return M.flatMap(
         B.accounts(), as -> M.flatMap(
@@ -29,7 +26,7 @@ public class BankingExample {
   }
 
   public static void main(String[] args) {
-    Task<Amount> task = Task.lift(bankingFProgram().foldMap(BankingF.FUNCTOR, Task.MONAD, execBanking));
+    Task<Amount> task = Task.lift(bankingFProgram().foldMap(BankingF.FUNCTOR, Task.MONAD, ExecBanking.INSTANCE));
     Amount amount = task.run();
     System.out.println("Result: " + amount);
   }

@@ -7,7 +7,9 @@ import vlad.fp.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-public class BankingLogging implements Interpreter<BankingF, Parametrized<Halt, LoggingF>> {
+public enum BankingLogging implements Interpreter<BankingF, Parametrized<Halt, LoggingF>> {
+  INSTANCE;
+
   private static <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
     return Free.liftF(Halt.functor(), new Halt<>(new Log<>(msg)));
   }

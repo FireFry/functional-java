@@ -6,7 +6,9 @@ import vlad.fp.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-public final class LoggingFile implements Interpreter<LoggingF, FileF> {
+public enum LoggingFile implements Interpreter<LoggingF, FileF> {
+  INSTANCE;
+
   @Override
   public <T> Free<FileF, T> apply(Parametrized<LoggingF, T> fa) {
     return LoggingF.lift(fa).foldT(

@@ -12,7 +12,9 @@ import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
-public class BankingProtocol implements Interpreter<BankingF, ProtocolF> {
+public enum BankingProtocol implements Interpreter<BankingF, ProtocolF> {
+  INSTANCE;
+
   @Override
   public <T> Parametrized<Parametrized<Free, ProtocolF>, T> apply(Parametrized<BankingF, T> fa) {
     return BankingF.lift(fa).foldT(

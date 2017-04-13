@@ -16,24 +16,19 @@ import vlad.fp.lib.Task;
 import vlad.fp.lib.Unit;
 import vlad.fp.lib.higher.Parametrized;
 
-public class ExecBanking implements Natural<BankingF, Task> {
-  private static final ExecFile execFile = new ExecFile();
-  private static final ExecSocket execSocket = new ExecSocket();
-  private static final LoggingFile loggingFile = new LoggingFile();
-  private static final BankingLogging bankingLogging = new BankingLogging();
-  private static final BankingProtocol bankingProtocol = new BankingProtocol();
-  private static final ProtocolSocket protocolSocket = new ProtocolSocket();
+public enum ExecBanking implements Natural<BankingF, Task> {
+  INSTANCE;
 
   @Override
   public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
     BankingF<T> banking = BankingF.lift(fa);
-    Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(bankingLogging.apply(banking));
+    Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(BankingLogging.INSTANCE.apply(banking));
     Free<LoggingF, Unit> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging);
-    Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile));
-    return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, execFile)).flatMap(v -> {
-      Free<ProtocolF, T> protocol = Free.lift(bankingProtocol.apply(banking));
-      Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), protocolSocket));
-      return Task.lift(socket.foldMap(SocketF.FUNCTOR, Task.MONAD, execSocket));
+    Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), LoggingFile.INSTANCE));
+    return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, ExecFile.INSTANCE)).flatMap(v -> {
+      Free<ProtocolF, T> protocol = Free.lift(BankingProtocol.INSTANCE.apply(banking));
+      Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), ProtocolSocket.INSTANCE));
+      return Task.lift(socket.foldMap(SocketF.FUNCTOR, Task.MONAD, ExecSocket.INSTANCE));
     });
   }
 }
