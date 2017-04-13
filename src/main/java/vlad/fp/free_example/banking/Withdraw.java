@@ -1,5 +1,6 @@
 package vlad.fp.free_example.banking;
 
+import vlad.fp.free_example.banking.model.Amount;
 import vlad.fp.lib.function.Function;
 
 final class Withdraw<T> extends BankingF<T> {
