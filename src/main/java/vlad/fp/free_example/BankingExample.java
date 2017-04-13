@@ -14,6 +14,10 @@ import vlad.fp.lib.tuple.Tuple2;
 import java.util.List;
 
 public class BankingExample {
+  
+  enum Unit {
+    UNIT
+  }
 
   static final class Amount {
     final int value;
@@ -222,26 +226,14 @@ public class BankingExample {
     }
   }
 
-  static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
-    return M.flatMap(
-        B.accounts(), as -> M.flatMap(
-        B.balance(as.get(0)), b -> M.flatMap(
-        B.transfer(new Amount(123), new From(new Account("Foo")), new To(new Account("Bar"))), x -> M.map(
-        B.withdraw(new Amount(5)), ignored -> b))));
-  }
-
-  static Free<BankingF, Amount> bankingFProgram() {
-    return Free.lift(program(Free.freeMonad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
-  }
-
   static final class Halt<F, T> implements Parametrized<Parametrized<Halt, F>, T> {
     static <F, T> Halt<F, T> lift(Parametrized<Parametrized<Halt, F>, T> par) {
       return (Halt<F, T>) par;
     }
 
-    final Parametrized<F, Void> p;
+    final Parametrized<F, Unit> p;
 
-    Halt(Parametrized<F, Void> p) {
+    Halt(Parametrized<F, Unit> p) {
       this.p = p;
     }
 
@@ -254,8 +246,8 @@ public class BankingExample {
       };
     }
 
-    static <F, T> Free<F, Void> unhalt(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
-      return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(null));
+    static <F, T> Free<F, Unit> unhalt(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
+      return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(Unit.UNIT));
     }
   }
 
@@ -438,7 +430,7 @@ public class BankingExample {
       return FileF.lift(fa).foldT(
           append -> Task.delay(() -> {
             System.out.println("Writing to " + append.fileName + ": " + append.string);
-            return null;
+            return (T) Free.done(Unit.UNIT); // TODO: figure this out
           })
       );
     }
@@ -470,7 +462,7 @@ public class BankingExample {
   static final Natural<SocketF, Task> execSocket = new Natural<SocketF, Task>() {
     @Override
     public <T> Parametrized<Task, T> apply(Parametrized<SocketF, T> fa) {
-      return SocketF.lift(fa).fold(x -> Task.delay(() -> { System.out.println(x); return x; }));
+      return SocketF.lift(fa).fold(x -> Task.delay(() -> x));
     }
   };
 
@@ -479,8 +471,8 @@ public class BankingExample {
     public <T> Parametrized<Task, T> apply(Parametrized<BankingF, T> fa) {
       BankingF<T> banking = BankingF.lift(fa);
       Free<Parametrized<Halt, LoggingF>, T> logging = Free.lift(bankingLogging.apply(banking));
-      Free<LoggingF, T> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging).map(v -> null);
-      Free<FileF, T> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile));
+      Free<LoggingF, Unit> loggingUnhalt = Halt.unhalt(LoggingF.FUNCTOR, logging);
+      Free<FileF, Unit> file = Free.lift(loggingUnhalt.foldMap(LoggingF.FUNCTOR, Free.freeMonad(), loggingFile));
       return Task.lift(file.foldMap(FileF.FUNCTOR, Task.MONAD, execFile)).flatMap(v -> {
         Free<ProtocolF, T> protocol = Free.lift(bankingProtocol.apply(banking));
         Free<SocketF, T> socket = Free.lift(protocol.foldMap(ProtocolF.FUNCTOR, Free.freeMonad(), protocolSocket));
@@ -489,9 +481,22 @@ public class BankingExample {
     }
   };
 
+  static <F> Parametrized<F, Amount> program(Monad<F> M, Banking<F> B) {
+    return M.flatMap(
+        B.accounts(), as -> M.flatMap(
+        B.balance(as.get(0)), b -> M.flatMap(
+        B.transfer(new Amount(123), new From(new Account("Foo")), new To(new Account("Bar"))), x -> M.map(
+        B.withdraw(new Amount(5)), ignored -> b))));
+  }
+
+  static Free<BankingF, Amount> bankingFProgram() {
+    return Free.lift(program(Free.freeMonad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
+  }
+
   public static void main(String[] args) {
     Task<Amount> task = Task.lift(bankingFProgram().foldMap(BankingF.FUNCTOR, Task.MONAD, execBanking));
-    task.run();
+    Amount amount = task.run();
+    System.out.println("Result: " + amount);
   }
 
 }
