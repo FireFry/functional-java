@@ -1,12 +1,14 @@
 package vlad.fp.free_example.banking;
 
 import vlad.fp.free_example.banking.banking.BankingF;
+import vlad.fp.free_example.banking.logging.Log;
+import vlad.fp.free_example.banking.logging.LoggingF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.higher.Parametrized;
 
 class BankingLogging implements Interpreter<BankingF, Parametrized<Halt, LoggingF>> {
   static <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
-    return Free.liftF(Halt.functor(), new Halt<>(new LoggingF.Log<>(msg)));
+    return Free.liftF(Halt.functor(), new Halt<>(new Log<>(msg)));
   }
 
   @Override
