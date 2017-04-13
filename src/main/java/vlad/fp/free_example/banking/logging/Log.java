@@ -11,6 +11,6 @@ public final class Log<T> extends LoggingF<T> {
 
   @Override
   public <R> LoggingF<R> map(Function<T, R> f) {
-    return new vlad.fp.free_example.banking.logging.Log<>(msg);
+    return new Log<>(msg);
   }
 }

@@ -13,6 +13,6 @@ public final class AppendToFile<T> extends FileF<T> {
 
   @Override
   public <R> FileF<R> map(Function<T, R> f) {
-    return new vlad.fp.free_example.banking.file.AppendToFile<>(fileName, string);
+    return new AppendToFile<>(fileName, string);
   }
 }

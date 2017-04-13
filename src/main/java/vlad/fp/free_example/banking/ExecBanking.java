@@ -3,6 +3,7 @@ package vlad.fp.free_example.banking;
 import vlad.fp.free_example.banking.banking.BankingF;
 import vlad.fp.free_example.banking.file.FileF;
 import vlad.fp.free_example.banking.logging.LoggingF;
+import vlad.fp.free_example.banking.protocol.ProtocolF;
 import vlad.fp.lib.Free;
 import vlad.fp.lib.Natural;
 import vlad.fp.lib.Task;
