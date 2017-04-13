@@ -1,6 +1,7 @@
 package vlad.fp.free_example.banking;
 
 import vlad.fp.free_example.banking.banking.BankingF;
+import vlad.fp.free_example.banking.halt.Halt;
 import vlad.fp.free_example.banking.logging.Log;
 import vlad.fp.free_example.banking.logging.LoggingF;
 import vlad.fp.lib.Free;
