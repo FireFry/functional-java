@@ -2,8 +2,13 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Parametrized;
 
-public final class Trampoline<T> {
+public final class Trampoline<T> implements Parametrized<Trampoline,T> {
+  public static <T> Trampoline<T> lift(Parametrized<Trampoline, T> par) {
+    return (Trampoline<T>) par;
+  }
+
   private final Free<Supplier, T> free;
 
   private static <T> Trampoline<T> wrap(Free<Supplier, T> free) {
@@ -38,4 +43,16 @@ public final class Trampoline<T> {
   public T run() {
     return free.run(a -> Supplier.lift(a).apply(), Supplier.FUNCTOR);
   }
+
+  public static final Monad<Trampoline> MONAD = new Monad<Trampoline>() {
+    @Override
+    public <T> Parametrized<Trampoline, T> point(Supplier<T> a) {
+      return delay(a);
+    }
+
+    @Override
+    public <T, R> Parametrized<Trampoline, R> flatMap(Parametrized<Trampoline, T> fa, Function<T, Parametrized<Trampoline, R>> f) {
+      return lift(fa).flatMap(x -> lift(f.apply(x)));
+    }
+  };
 }

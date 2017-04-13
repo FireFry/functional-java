@@ -2,7 +2,7 @@ package vlad.fp.examples.console.dsl.console;
 
 import vlad.fp.lib.function.Function;
 
-public class WriteLine<T> extends ConsoleF<T> {
+public final class WriteLine<T> extends ConsoleF<T> {
   public final String s;
   public final Function<String, T> next;
 

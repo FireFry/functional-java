@@ -23,16 +23,19 @@ public abstract class BankingF<T> implements Parametrized<BankingF, T> {
       Function<Accounts<T>, R> accountsCase,
       Function<Balance<T>, R> balanceCase,
       Function<Transfer<T>, R> transferCase,
-      Function<Withdraw<T>, R> withdrawCase) {
-
+      Function<Withdraw<T>, R> withdrawCase
+  ) {
     Class<? extends BankingF> cls = getClass();
     if (cls.equals(Accounts.class)) {
       return accountsCase.apply((Accounts<T>) this);
-    } else if (cls.equals(Balance.class)) {
+    }
+    if (cls.equals(Balance.class)) {
       return balanceCase.apply((Balance<T>) this);
-    } else if (cls.equals(Transfer.class)) {
+    }
+    if (cls.equals(Transfer.class)) {
       return transferCase.apply((Transfer<T>) this);
-    } else if (cls.equals(Withdraw.class)) {
+    }
+    if (cls.equals(Withdraw.class)) {
       return withdrawCase.apply((Withdraw<T>) this);
     }
     throw new AssertionError();

@@ -42,4 +42,19 @@ public abstract class Utils {
     Throwables.throwIfUnchecked(th);
     throw new RuntimeException(th);
   }
+
+  public static <T> Supplier<T> unchecked(UncheckedSupplier<T> unchecked) {
+    return () -> {
+      try {
+        return unchecked.get();
+      } catch (Exception e) {
+        Throwables.throwIfUnchecked(e);
+        throw new RuntimeException(e);
+      }
+    };
+  }
+
+  public interface UncheckedSupplier<T> {
+    T get() throws Exception;
+  }
 }
