@@ -2,6 +2,7 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
 import java.time.Duration;
@@ -142,8 +143,8 @@ public final class Task<T> implements Parametrized<Task, T> {
 
   public static final Monad<Task> MONAD = new Monad<Task>() {
     @Override
-    public <T> Parametrized<Task, T> point(Supplier<T> a) {
-      return Task.delay(a);
+    public <T> Parametrized<Task, T> pure(T x) {
+      return Task.now(x);
     }
 
     @Override

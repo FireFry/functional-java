@@ -4,7 +4,7 @@ import vlad.fp.examples.console.dsl.console.Console;
 import vlad.fp.examples.console.dsl.console.ConsoleF;
 import vlad.fp.examples.console.exec.ConsoleIO;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Monad;
+import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.Trampoline;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Parametrized;
@@ -25,7 +25,7 @@ public class ConsoleExample {
   }
 
   private static Free<ConsoleF, String> consoleFProgram() {
-    return Free.lift(program(Free.freeMonad(), ConsoleF.consoleFree(ConsoleF.FUNCTOR, ConsoleF.CONSOLE)));
+    return Free.lift(program(Free.monad(), ConsoleF.consoleFree(ConsoleF.FUNCTOR, ConsoleF.CONSOLE)));
   }
 
   public static void main(String[] args) {

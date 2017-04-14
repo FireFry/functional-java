@@ -2,8 +2,13 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.higher.Parametrized;
 
-public abstract class Option<T> {
+public abstract class Option<T> implements Parametrized<Option, T> {
+  public static <T> Option<T> lift(Parametrized<Option, T> par) {
+    return (Option<T>) par;
+  }
 
   public static <T> Option<T> none() {
     return None();
@@ -99,6 +104,19 @@ public abstract class Option<T> {
     protected Some<T> asSome() {
       return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) { return true; }
+      if (o == null || getClass() != o.getClass()) { return false; }
+      Some<?> some = (Some<?>) o;
+      return value != null ? value.equals(some.value) : some.value == null;
+    }
+
+    @Override
+    public int hashCode() {
+      return value != null ? value.hashCode() : 0;
+    }
   }
 
   private static <T> Some<T> Some(T value) {
@@ -108,4 +126,11 @@ public abstract class Option<T> {
   protected Some<T> asSome() {
     throw new AssertionError();
   }
+
+  public static final Functor<Option> FUNCTOR = new Functor<Option>() {
+    @Override
+    public <T, R> Parametrized<Option, R> map(Parametrized<Option, T> fa, Function<T, R> f) {
+      return lift(fa).map(f);
+    }
+  };
 }

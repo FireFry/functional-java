@@ -2,6 +2,7 @@ package vlad.fp.lib;
 
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
 public final class Trampoline<T> implements Parametrized<Trampoline,T> {
@@ -46,8 +47,8 @@ public final class Trampoline<T> implements Parametrized<Trampoline,T> {
 
   public static final Monad<Trampoline> MONAD = new Monad<Trampoline>() {
     @Override
-    public <T> Parametrized<Trampoline, T> point(Supplier<T> a) {
-      return delay(a);
+    public <T> Parametrized<Trampoline, T> pure(T x) {
+      return done(x);
     }
 
     @Override

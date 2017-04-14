@@ -3,6 +3,7 @@ package vlad.fp.lib;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.function.Supplier;
 import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
 public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, T> {
@@ -63,7 +64,7 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
   public final <G> Parametrized<G, T> foldMap(Functor<F> F, Monad<G> G, Natural<F, G> f){
     return fold(F,
         left -> G.flatMap(f.apply(left), x -> x.foldMap(F, G, f)),
-        right -> G.point(() -> right)
+        right -> G.pure(right)
     );
   }
 
@@ -180,11 +181,11 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
     throw new AssertionError();
   }
 
-  public static <S> Monad<Parametrized<Free, S>> freeMonad() {
+  public static <S> Monad<Parametrized<Free, S>> monad() {
     return new Monad<Parametrized<Free, S>>() {
       @Override
-      public <T> Free<S, T> point(Supplier<T> a) {
-        return Done(a.apply());
+      public <T> Parametrized<Parametrized<Free, S>, T> pure(T x) {
+        return Done(x);
       }
 
       @Override
