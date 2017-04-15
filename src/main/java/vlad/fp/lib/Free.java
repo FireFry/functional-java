@@ -71,7 +71,7 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
     return resume(F).fold(suspendCase, returnCase);
   }
 
-  public <R> Free<F, R> map(Function<T, R> f) {
+  public <R> Free<F, R> map(Function<? super T, R> f) {
     return flatMap(t -> Done(f.apply(t)));
   }
 

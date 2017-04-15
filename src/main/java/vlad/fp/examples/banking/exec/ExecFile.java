@@ -14,8 +14,8 @@ public enum ExecFile implements Natural<FileF, Task> {
     return FileF.lift(fa).foldT(
         append -> Task.delay(() -> {
           System.out.println("Writing to " + append.fileName + ": " + append.string);
-          return append.next.apply(Unit.UNIT);
-        })
+          return Unit.UNIT;
+        }).map(append.next)
     );
   }
 }

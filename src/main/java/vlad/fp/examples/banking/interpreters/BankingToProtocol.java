@@ -19,10 +19,10 @@ public enum BankingToProtocol implements Interpreter<BankingF, ProtocolF> {
   @Override
   public <T> Free<ProtocolF, T> apply(Parametrized<BankingF, T> fa) {
     return BankingF.lift(fa).foldT(
-        accounts -> ProtocolF.justReturn(accounts.next.apply(ImmutableList.of(account("Foo"), account("Bar")))),
-        balance -> ProtocolF.justReturn(balance.next.apply(amount(10000))),
-        transfer -> ProtocolF.justReturn(transfer.next.apply(new TransferResult(Either.left(error("Ooops"))))),
-        withdraw -> ProtocolF.justReturn(withdraw.next.apply(amount(10000 - withdraw.amount.value)))
+        accounts -> ProtocolF.justReturn(ImmutableList.of(account("Foo"), account("Bar"))).map(accounts.next),
+        balance -> ProtocolF.justReturn(amount(10000)).map(balance.next),
+        transfer -> ProtocolF.justReturn(new TransferResult(Either.left(error("Ooops")))).map(transfer.next),
+        withdraw -> ProtocolF.justReturn(amount(10000 - withdraw.amount.value)).map(withdraw.next)
     );
   }
 }
