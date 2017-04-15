@@ -62,7 +62,7 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
 
   public final <G> Parametrized<G, T> foldMap(Functor<F> F, Monad<G> G, Natural<F, G> f){
     return fold(F,
-        left -> G.flatMap(f.apply(left), x -> x.foldMap(F, G, f)),
+        left -> G.flatMap(G.flatMap(G.pure(left), f::apply), x -> x.foldMap(F, G, f)),
         right -> G.pure(right)
     );
   }
