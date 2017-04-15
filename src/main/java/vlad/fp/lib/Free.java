@@ -11,12 +11,12 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
     return Done(value);
   }
 
-  public static <F, T> Free<F, T> liftF(Functor<F> F, Parametrized<F, T> value){
-    return Suspend(F.map(value, Free::Done));
+  public static <F, T> Free<F, T> liftF(Parametrized<F, T> value){
+    return Suspend(value);
   }
 
   public static <F, T> Free<F, T> suspend(Parametrized<F, Free<F, T>> thunk) {
-    return Suspend(thunk);
+    return liftF(thunk).flatMap(Function.identity());
   }
 
   public static <F, T> Free<F, T> lift(Parametrized<Parametrized<Free, F>, T> f) {
@@ -85,11 +85,11 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
   private Either<Parametrized<F, Free<F, T>>, T> resume(Functor<F> F) {
     return Tailrec.run(this, x -> x.foldT(
         done -> Tailrec.finish(Either.right(done.value)),
-        suspend -> Tailrec.finish(Either.left(suspend.thunk)),
+        suspend -> Tailrec.finish(Either.left(F.map(suspend.thunk, Free::Done))),
         bindSuspend -> bindSuspend.thunk.foldT(
             doneA -> Tailrec.next(bindSuspend.f.apply(doneA.value)),
             suspendA -> Tailrec.finish(Either.left(
-                F.map(suspendA.thunk, o -> o.flatMap(bindSuspend.f)))),
+                F.map(suspendA.thunk, bindSuspend.f))),
             bindSuspendA -> Tailrec.next(BindSuspend(bindSuspendA.thunk,
                 s -> BindSuspend(bindSuspendA.f.apply(s), bindSuspend.f)))
         )
@@ -123,9 +123,9 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
   }
 
   private static final class Suspend<F, T> extends Free<F, T> {
-    private final Parametrized<F, Free<F, T>> thunk;
+    private final Parametrized<F, T> thunk;
 
-    private Suspend(Parametrized<F, Free<F, T>> thunk) {
+    private Suspend(Parametrized<F, T> thunk) {
       this.thunk = thunk;
     }
 
@@ -140,7 +140,7 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
     }
   }
 
-  private static <F, T> Suspend<F, T> Suspend(Parametrized<F, Free<F, T>> thunk) {
+  private static <F, T> Suspend<F, T> Suspend(Parametrized<F, T> thunk) {
     return new Suspend<>(thunk);
   }
 

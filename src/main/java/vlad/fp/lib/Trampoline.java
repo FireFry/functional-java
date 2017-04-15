@@ -30,7 +30,7 @@ public final class Trampoline<T> implements Parametrized<Trampoline,T> {
   }
 
   public static <T> Trampoline<T> delay(Supplier<T> supplier) {
-    return wrap(Free.liftF(Supplier.FUNCTOR, supplier));
+    return wrap(Free.liftF(supplier));
   }
 
   public <R> Trampoline<R> flatMap(Function<T, Trampoline<R>> f) {

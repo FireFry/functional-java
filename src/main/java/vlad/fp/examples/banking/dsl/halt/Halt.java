@@ -17,8 +17,8 @@ public final class Halt<F, T> implements Parametrized<Parametrized<Halt, F>, T> 
     this.p = p;
   }
 
-  public static <F, T> Free<F, Unit> unhalt(Functor<F> functor, Free<Parametrized<Halt, F>, T> free) {
-    return free.fold(functor(), arg -> Free.liftF(functor, Halt.lift(arg).p), arg -> Free.done(Unit.UNIT));
+  public static <F, T> Free<F, Unit> unhalt(Free<Parametrized<Halt, F>, T> free) {
+    return free.fold(functor(), arg -> Free.liftF(Halt.lift(arg).p), arg -> Free.done(Unit.UNIT));
   }
 
   public static <F> Functor<Parametrized<Halt, F>> functor() {

@@ -13,7 +13,7 @@ public enum BankingToLogging implements Interpreter<BankingF, Parametrized<Halt,
   INTERPRETER;
 
   private static <T> Free<Parametrized<Halt, LoggingF>, T> log(String msg) {
-    return Free.liftF(Halt.functor(), new Halt<>(new Log<>(msg, Function.identity())));
+    return Free.liftF(new Halt<>(new Log<>(msg, Function.identity())));
   }
 
   @Override

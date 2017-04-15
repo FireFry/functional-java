@@ -75,26 +75,26 @@ public abstract class BankingF<T> implements Parametrized<BankingF, T> {
     }
   };
 
-  public static <F> Banking<Parametrized<Free, F>> bankingFree(Functor<F> functor, Banking<F> banking) {
+  public static <F> Banking<Parametrized<Free, F>> bankingFree(Banking<F> banking) {
     return new Banking<Parametrized<Free, F>>() {
       @Override
       public Free<F, List<Account>> accounts() {
-        return Free.liftF(functor, banking.accounts());
+        return Free.liftF(banking.accounts());
       }
 
       @Override
       public Free<F, Amount> balance(Account account) {
-        return Free.liftF(functor, banking.balance(account));
+        return Free.liftF(banking.balance(account));
       }
 
       @Override
       public Free<F, TransferResult> transfer(Amount amount, From from, To to) {
-        return Free.liftF(functor, banking.transfer(amount, from, to));
+        return Free.liftF(banking.transfer(amount, from, to));
       }
 
       @Override
       public Free<F, Amount> withdraw(Amount amount) {
-        return Free.liftF(functor, banking.withdraw(amount));
+        return Free.liftF(banking.withdraw(amount));
       }
     };
   }

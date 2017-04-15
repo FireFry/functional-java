@@ -25,7 +25,7 @@ public class ConsoleExample {
   }
 
   private static Free<ConsoleF, String> consoleFProgram() {
-    return Free.lift(program(Free.monad(), ConsoleF.consoleFree(ConsoleF.FUNCTOR, ConsoleF.CONSOLE)));
+    return Free.lift(program(Free.monad(), ConsoleF.consoleFree(ConsoleF.CONSOLE)));
   }
 
   public static void main(String[] args) {

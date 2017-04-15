@@ -13,7 +13,7 @@ public abstract class ProtocolF<T> implements Parametrized<ProtocolF, T> {
   ProtocolF() {}
 
   public static <T> Free<ProtocolF, T> justReturn(T apply) {
-    return Free.liftF(FUNCTOR, new JustReturn<>(apply, v -> apply));
+    return Free.liftF(new JustReturn<>(apply, v -> apply));
   }
 
   public abstract <R> ProtocolF<R> map(Function<T, R> f);

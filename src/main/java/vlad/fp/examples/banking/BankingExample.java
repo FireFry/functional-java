@@ -25,7 +25,7 @@ public class BankingExample {
   }
 
   private static Free<BankingF, Amount> bankingFProgram() {
-    return Free.lift(program(Free.monad(), BankingF.bankingFree(BankingF.FUNCTOR, BankingF.BANKING)));
+    return Free.lift(program(Free.monad(), BankingF.bankingFree(BankingF.BANKING)));
   }
 
   public static void main(String[] args) {
