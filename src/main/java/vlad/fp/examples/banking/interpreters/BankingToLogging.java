@@ -5,7 +5,7 @@ import vlad.fp.examples.banking.dsl.halt.Halt;
 import vlad.fp.examples.banking.dsl.logging.Log;
 import vlad.fp.examples.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Interpreter;
+import vlad.fp.lib.higher.Interpreter;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Parametrized;
 

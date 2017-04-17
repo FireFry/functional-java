@@ -11,7 +11,7 @@ import vlad.fp.examples.banking.dsl.logging.LoggingF;
 import vlad.fp.examples.banking.dsl.protocol.ProtocolF;
 import vlad.fp.examples.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Natural;
+import vlad.fp.lib.higher.Natural;
 import vlad.fp.lib.Task;
 import vlad.fp.lib.Unit;
 import vlad.fp.lib.higher.Parametrized;

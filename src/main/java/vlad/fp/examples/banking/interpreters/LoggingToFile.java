@@ -4,7 +4,7 @@ import vlad.fp.examples.banking.dsl.file.AppendToFile;
 import vlad.fp.examples.banking.dsl.file.FileF;
 import vlad.fp.examples.banking.dsl.logging.LoggingF;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Interpreter;
+import vlad.fp.lib.higher.Interpreter;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum LoggingToFile implements Interpreter<LoggingF, FileF> {

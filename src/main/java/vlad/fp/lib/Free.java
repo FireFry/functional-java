@@ -3,6 +3,7 @@ package vlad.fp.lib;
 import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;
 import vlad.fp.lib.higher.Monad;
+import vlad.fp.lib.higher.Natural;
 import vlad.fp.lib.higher.Parametrized;
 
 public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, T> {

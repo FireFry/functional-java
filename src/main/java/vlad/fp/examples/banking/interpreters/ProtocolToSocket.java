@@ -4,7 +4,7 @@ import vlad.fp.examples.banking.dsl.protocol.ProtocolF;
 import vlad.fp.examples.banking.dsl.socket.JustReturn;
 import vlad.fp.examples.banking.dsl.socket.SocketF;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Interpreter;
+import vlad.fp.lib.higher.Interpreter;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum ProtocolToSocket implements Interpreter<ProtocolF, SocketF> {

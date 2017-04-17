@@ -1,7 +1,7 @@
 package vlad.fp.examples.console.exec;
 
 import vlad.fp.examples.console.dsl.console.ConsoleF;
-import vlad.fp.lib.Natural;
+import vlad.fp.lib.higher.Natural;
 import vlad.fp.lib.Trampoline;
 import vlad.fp.lib.Utils;
 import vlad.fp.lib.higher.Parametrized;

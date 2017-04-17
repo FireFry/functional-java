@@ -10,7 +10,7 @@ import vlad.fp.examples.banking.dsl.model.TransferResult;
 import vlad.fp.examples.banking.dsl.protocol.ProtocolF;
 import vlad.fp.lib.Either;
 import vlad.fp.lib.Free;
-import vlad.fp.lib.Interpreter;
+import vlad.fp.lib.higher.Interpreter;
 import vlad.fp.lib.higher.Parametrized;
 
 public enum BankingToProtocol implements Interpreter<BankingF, ProtocolF> {

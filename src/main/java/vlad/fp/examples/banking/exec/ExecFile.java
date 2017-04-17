@@ -1,7 +1,7 @@
 package vlad.fp.examples.banking.exec;
 
 import vlad.fp.examples.banking.dsl.file.FileF;
-import vlad.fp.lib.Natural;
+import vlad.fp.lib.higher.Natural;
 import vlad.fp.lib.Task;
 import vlad.fp.lib.Unit;
 import vlad.fp.lib.higher.Parametrized;
