@@ -27,8 +27,8 @@ public class CalcExample {
 
     Algebra<Calc, String> explain = fa -> Calc.lift(fa).fold(
         String::valueOf,
-        (x, y) -> "(" + String.valueOf(x) + " + " + String.valueOf(y) + ")",
-        (x, y) -> "(" + String.valueOf(x) + " * " + String.valueOf(y) + ")"
+        (x, y) -> "(" + x + " + " + y + ")",
+        (x, y) -> "(" + x + " * " + y + ")"
     );
 
     System.out.print(calc.fold(Calc.FUNCTOR, explain)); // (3 * (1 + 2))
