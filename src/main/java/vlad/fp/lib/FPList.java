@@ -69,6 +69,17 @@ public abstract class FPList<T> implements Parametrized<FPList, T> {
     }
   }
 
+  public <R> R foldLeft(R initial, Function2<R, T, R> acc) {
+    return foldLeftT(initial, acc).run();
+  }
+
+  private <R> Trampoline<R> foldLeftT(R initial, Function2<R, T, R> acc) {
+    return fold(
+        () -> Trampoline.done(initial),
+        (head, tail) -> Trampoline.suspend(() -> tail.foldLeftT(acc.apply(initial, head), acc))
+    );
+  }
+
   public enum Type {
     NIL,
     CONS
