@@ -8,18 +8,14 @@ public class FPListTest {
 
   @Test
   public void shouldCreateALargeList() {
-    FPList<Integer> list = listOfSize(1000000);
+    FPList<Integer> list = listOfSize(1000000).run();
     assertNotNull(list);
   }
 
-  private static FPList<Integer> listOfSize(int size) {
-    return listOfSizeTrampoline(size).run();
-  }
-
-  private static Trampoline<FPList<Integer>> listOfSizeTrampoline(int size) {
+  private static Trampoline<FPList<Integer>> listOfSize(int size) {
     return size < 1
         ? Trampoline.done(FPList.nil())
-        : Trampoline.suspend(() -> listOfSizeTrampoline(size - 1)).map(tail -> FPList.cons(size, tail));
+        : Trampoline.suspend(() -> listOfSize(size - 1)).map(tail -> FPList.cons(size, tail));
   }
 
 }

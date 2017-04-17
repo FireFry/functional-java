@@ -40,6 +40,10 @@ public abstract class Either<L, R> {
     return fold(Either::left, x -> Either.right(f.apply(x)));
   }
 
+  public <T> Either<T, R> mapLeft(Function<L, T> f) {
+    return fold(x -> Either.left(f.apply(x)), Either::right);
+  }
+
   private <T> T foldT(
       Function<Left<L, R>, T> leftCase,
       Function<Right<L, R>, T> rightCase
