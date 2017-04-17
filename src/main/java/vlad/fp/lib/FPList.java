@@ -23,7 +23,7 @@ public abstract class FPList<T> implements Parametrized<FPList, T> {
   }
 
   public static <T> Cons<T> cons(T head, FPList<T> tail) {
-    return Cons.cons(head, tail);
+    return new Cons<>(head, tail);
   }
 
   public static <T> FPList<T> join(FPList<T> first, FPList<T> second) {

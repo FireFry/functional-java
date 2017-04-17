@@ -56,7 +56,7 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
     return foldT(
         done -> BindSuspend(done, f),
         suspend -> BindSuspend(suspend, f),
-        bindSuspend -> BindSuspend(bindSuspend.thunk, s -> bindSuspend.f.apply(s).flatMap(f))
+        bindSuspend -> BindSuspend(bindSuspend.thunk, s -> BindSuspend(bindSuspend.f.apply(s), f))
     );
   }
 
