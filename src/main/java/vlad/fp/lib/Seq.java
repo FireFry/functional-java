@@ -1,86 +1,160 @@
 package vlad.fp.lib;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Ordering;
-
-import java.util.Comparator;
-import java.util.List;
 import vlad.fp.lib.function.Function;
-import vlad.fp.lib.higher.Functor;
+import vlad.fp.lib.function.Function2;
+import vlad.fp.lib.function.Supplier;
+import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
-import java.util.function.Predicate;
-import java.util.stream.Stream;
+public abstract class Seq<T> implements Parametrized<Seq, T> {
 
-public final class Seq<T> implements Parametrized<Seq, T> {
+  public static final Monad<Seq> MONAD = SeqMonad.MONAD;
+
   public static <T> Seq<T> lift(Parametrized<Seq, T> par) {
     return (Seq<T>) par;
   }
 
-  @SuppressWarnings("unchecked")
-  private static final Seq NIL = new Seq(ImmutableList.of());
-
-  private final ImmutableList<T> list;
-
-  @SuppressWarnings("unchecked")
-  public static <T> Seq<T> nil() {
-    return NIL;
+  public static <T> Nil<T> nil() {
+    return Nil.getInstance();
   }
 
-  public static <T> Seq<T> of(T value) {
-    return new Seq<>(ImmutableList.of(value));
+  public static <T> Cons<T> cons(T head) {
+    return cons(head, nil());
   }
 
-  public static <T> Seq<T> wrap(List<T> list) {
-    return new Seq<>(ImmutableList.copyOf(list));
+  public static <T> Cons<T> cons(T head, Seq<T> tail) {
+    return new Cons<>(head, tail);
   }
 
-  private Seq(ImmutableList<T> list) {
-    this.list = list;
+  public static <T> Seq<T> join(Seq<T> first, Seq<T> second) {
+    return first.fold(
+        () -> second,
+        (x, xs) -> cons(x, join(xs, second))
+    );
   }
 
-  private <R> Seq<R> transform(Function<Stream<T>, Stream<R>> f) {
-    return Seq.wrap(f.apply(list.stream()).collect(toImmutableList()));
-  }
-
-  public <R> Seq<R> flatMap(Function<T, Seq<R>> f) {
-    return transform(s -> s.flatMap(e -> f.apply(e).list.stream()));
+  private Seq() {
+    // sealed trait
   }
 
   public <R> Seq<R> map(Function<T, R> f) {
-    return transform(s -> s.map(f));
+    return fold(
+        Seq::nil,
+        (head, tail) -> cons(f.apply(head), tail.map(f))
+    );
   }
 
-  public Seq<T> sorted(Comparator<T> comparator) {
-    return wrap(Ordering.from(comparator).sortedCopy(list));
+  public <R> Seq<R> flatMap(Function<T, Seq<R>> f) {
+    return fold(
+        Seq::nil,
+        (x, xs) -> join(f.apply(x), xs.flatMap(f))
+    );
   }
 
-  public Seq<T> filter(Predicate<T> p) {
-    return transform(s -> s.filter(p));
+  public <R> R fold(Supplier<R> nilCase, Function2<T, Seq<T>, R> consCase) {
+    return foldT(
+        nil -> nilCase.apply(),
+        cons -> consCase.apply(cons.head(), cons.tail())
+    );
   }
 
-  public <R> R apply(Function<Seq<T>, R> f) {
-    return f.apply(this);
-  }
-
-  public List<T> toList() {
-    return list;
-  }
-
-  public Seq<T> take(int n) {
-    return transform(s -> s.limit(n));
-  }
-
-  public int size() {
-    return list.size();
-  }
-
-  public static final Functor<Seq> FUNCTOR = new Functor<Seq>() {
-    @Override
-    public <T, R> Parametrized<Seq, R> map(Parametrized<Seq, T> fa, Function<T, R> f) {
-      return lift(fa).map(f);
+  public <R> R foldT(Function<Nil<T>, R> nilCase, Function<Cons<T>, R> consCase) {
+    switch (getType()) {
+      case NIL:
+        return nilCase.apply(asNil());
+      case CONS:
+        return consCase.apply(asCons());
+      default:
+        throw new AssertionError();
     }
-  };
+  }
+
+  public <R> R foldLeft(R initial, Function2<R, T, R> acc) {
+    return foldLeftT(initial, acc).run();
+  }
+
+  private <R> Trampoline<R> foldLeftT(R initial, Function2<R, T, R> acc) {
+    return fold(
+        () -> Trampoline.done(initial),
+        (head, tail) -> Trampoline.suspend(() -> tail.foldLeftT(acc.apply(initial, head), acc))
+    );
+  }
+
+  public enum Type {
+    NIL,
+    CONS
+  }
+
+  public abstract Type getType();
+
+  public Nil<T> asNil() {
+    throw new AssertionError();
+  }
+
+  public Cons<T> asCons() {
+    throw new AssertionError();
+  }
+
+  public static final class Nil<T> extends Seq<T> {
+    private static final Nil INSTANCE = new Nil();
+
+    @SuppressWarnings("unchecked")
+    private static <T> Nil<T> getInstance() {
+      return INSTANCE;
+    }
+
+    private Nil() {}
+
+    @Override
+    public Type getType() {
+      return Type.NIL;
+    }
+
+    @Override
+    public Nil<T> asNil() {
+      return this;
+    }
+  }
+
+  public static final class Cons<T> extends Seq<T> {
+    private final T head;
+    private final Seq<T> tail;
+
+    private Cons(T head, Seq<T> tail) {
+      this.head = head;
+      this.tail = tail;
+    }
+
+    public T head() {
+      return head;
+    }
+
+    public Seq<T> tail() {
+      return tail;
+    }
+
+    @Override
+    public Type getType() {
+      return Type.CONS;
+    }
+
+    @Override
+    public Cons<T> asCons() {
+      return this;
+    }
+  }
+
+  private enum SeqMonad implements Monad<Seq> {
+    MONAD;
+
+    @Override
+    public <T, R> Seq<R> flatMap(Parametrized<Seq, T> fa, Function<T, Parametrized<Seq, R>> f) {
+      return lift(fa).flatMap(x -> lift(f.apply(x)));
+    }
+
+    @Override
+    public <T> Parametrized<Seq, T> pure(T x) {
+      return cons(x);
+    }
+  }
 }
