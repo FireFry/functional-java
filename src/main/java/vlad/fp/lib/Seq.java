@@ -6,6 +6,8 @@ import vlad.fp.lib.function.Supplier;
 import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
+import java.util.function.Predicate;
+
 public abstract class Seq<T> implements Parametrized<Seq, T> {
 
   public static final Monad<Seq> MONAD = SeqMonad.MONAD;
@@ -38,9 +40,13 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
   }
 
   public <R> Seq<R> flatMap(Function<T, Seq<R>> f) {
+    return flatMapT(f).run();
+  }
+
+  public <R> Trampoline<Seq<R>> flatMapT(Function<T, Seq<R>> f) {
     return fold(
-        Seq::nil,
-        (x, xs) -> f.apply(x).join(xs.flatMap(f))
+        () -> Trampoline.done(Seq.nil()),
+        (x, xs) -> Trampoline.suspend(() -> xs.flatMapT(f).map(tail -> f.apply(x).join(tail)))
     );
   }
 
@@ -82,6 +88,10 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
         () -> Trampoline.done(initial),
         (head, tail) -> Trampoline.suspend(() -> tail.foldLeftT(acc.apply(initial, head), acc))
     );
+  }
+
+  public Seq<T> filter(Predicate<T> predicate) {
+    return flatMap(x -> predicate.test(x) ? Seq.cons(x) : Seq.nil());
   }
 
   public enum Type {

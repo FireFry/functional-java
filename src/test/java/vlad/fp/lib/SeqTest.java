@@ -7,9 +7,11 @@ import org.junit.Test;
 
 public class SeqTest {
 
+  private static final Seq<Integer> list = listOfSize(1000000).run();
+
   @Test
   public void shouldCreateALargeList() {
-    assertNotNull(listOfSize(1000000).run());
+    assertNotNull(list);
   }
 
   private static Trampoline<Seq<Integer>> listOfSize(int size) {
@@ -20,7 +22,12 @@ public class SeqTest {
 
   @Test
   public void shouldSumALargeList() {
-    assertEquals(500000500000L, (long) listOfSize(1000000).run().foldLeft(0L, (a, b) -> a + b));
+    assertEquals(500000500000L, (long) list.foldLeft(0L, (a, b) -> a + b));
+  }
+
+  @Test
+  public void shouldFilterList() {
+    assertEquals(250000500000L, (long) list.filter(x -> x % 2 == 0).foldLeft(0L, (a, b) -> a + b));
   }
 
 }
