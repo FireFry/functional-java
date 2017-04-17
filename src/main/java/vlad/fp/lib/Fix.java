@@ -1,7 +1,6 @@
 package vlad.fp.lib;
 
-import vlad.fp.lib.higher.Algebra;
-import vlad.fp.lib.higher.CoAlgebra;
+import vlad.fp.lib.function.Function;
 import vlad.fp.lib.higher.Functor;
 import vlad.fp.lib.higher.Parametrized;
 
@@ -16,15 +15,20 @@ public final class Fix<F> implements Parametrized<Fix, F> {
     this.unfix = unfix;
   }
 
-  public <T> T fold(Functor<F> F, Algebra<F, T> f) {
+  public <T> T fold(Functor<F> F, Function<Parametrized<F, T>, T> f) {
     return f.apply(F.map(unfix, fix -> fix.fold(F, f)));
   }
 
-  public static <T, F> Fix<F> unfold(Functor<F> F, T data, CoAlgebra<T, F> f) {
+  public static <T, F> Fix<F> unfold(Functor<F> F, T data, Function<T, Parametrized<F, T>> f) {
     return fix(F.map(f.apply(data), arg -> unfold(F, arg, f)));
   }
 
-  public static <F, T, R> R hylo(Functor<F> F, T data, CoAlgebra<T, F> coAlg, Algebra<F, R> alg) {
+  public static <F, T, R> R hylo(
+      Functor<F> F,
+      T data,
+      Function<T, Parametrized<F, T>> coAlg,
+      Function<Parametrized<F, R>, R> alg
+  ) {
     return alg.apply(F.map(coAlg.apply(data), x -> hylo(F, x, coAlg, alg)));
   }
 }

@@ -6,11 +6,15 @@ import static vlad.fp.examples.calc.calc.Calc.multiply;
 import static vlad.fp.examples.calc.calc.Calc.number;
 
 import vlad.fp.examples.calc.calc.Calc;
-import vlad.fp.lib.higher.Algebra;
+import vlad.fp.lib.function.Function;
 import vlad.fp.lib.Fix;
-import vlad.fp.lib.higher.CoAlgebra;
+import vlad.fp.lib.higher.Parametrized;
 
 public class CalcExample {
+
+  interface Algebra<F, T> extends Function<Parametrized<F, T>, T> {}
+
+  interface CoAlgebra<T, F> extends Function<T, Parametrized<F, T>> {}
 
   public static void main(String[] args) {
     Fix<Calc> calc = fix(multiply(
@@ -35,14 +39,15 @@ public class CalcExample {
     System.out.print(" = ");
     System.out.println(calc.fold(Calc.FUNCTOR, eval)); // 9
 
-    CoAlgebra<Integer, Calc> fraction = x ->
+    CoAlgebra<Integer, Calc> expand = x ->
         (x <= 2) 
             ? number(x) 
             : (x % 2 == 0) 
                 ? multiply(2, x / 2) 
                 : add(x - x / 2, x / 2);
 
-    System.out.println(Fix.hylo(Calc.FUNCTOR, 9, fraction, explain)); // (((2 + 1) + 2) + (2 * 2))
+    System.out.print("13 = ");
+    System.out.println(Fix.hylo(Calc.FUNCTOR, 13, expand, explain)); // (((2 * 2) + (2 + 1)) + (2 * (2 + 1)))
   }
 
 }
