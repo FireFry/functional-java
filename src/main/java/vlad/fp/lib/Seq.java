@@ -6,6 +6,7 @@ import vlad.fp.lib.function.Supplier;
 import vlad.fp.lib.higher.Monad;
 import vlad.fp.lib.higher.Parametrized;
 
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 public abstract class Seq<T> implements Parametrized<Seq, T> {
@@ -26,6 +27,17 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
 
   public static <T> Cons<T> cons(T head, Seq<T> tail) {
     return new Cons<>(head, tail);
+  }
+
+  public Seq<T> sort(Comparator<T> c) {
+    return fold(
+        Seq::nil,
+        (x, xs) -> {
+          Seq<T> left = filter(y -> c.compare(x, y) <= 0);
+          Seq<T> right = filter(y -> c.compare(x, y) > 0);
+          return left.sort(c).join(right.sort(c));
+        }
+    );
   }
 
   private Seq() {
