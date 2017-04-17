@@ -5,15 +5,31 @@ import vlad.fp.lib.function.Function;
 public abstract class Either<L, R> {
 
   public static <L, R> Either<L, R> left(L value) {
-    return Left(value);
+    return new Left<>(value);
   }
 
   public static <L, R> Either<L, R> right(R value) {
-    return Right(value);
+    return new Right<>(value);
   }
 
   private Either() {
     // private constructor
+  }
+
+  public boolean isLeft() {
+    return getType() == Type.LEFT;
+  }
+
+  public boolean isRight() {
+    return getType() == Type.RIGHT;
+  }
+
+  public L left() {
+    throw new AssertionError();
+  }
+
+  public R right() {
+    throw new AssertionError();
   }
 
   public <T> Either<L, T> flatMap(Function<R, Either<L, T>> f) {
@@ -23,13 +39,6 @@ public abstract class Either<L, R> {
   public <T> Either<L, T> map(Function<R, T> f) {
     return fold(Either::left, x -> Either.right(f.apply(x)));
   }
-
-  private enum Type {
-    LEFT,
-    RIGHT,
-  }
-
-  protected abstract Type getType();
 
   private <T> T foldT(
       Function<Left<L, R>, T> leftCase,
@@ -55,6 +64,21 @@ public abstract class Either<L, R> {
     );
   }
 
+  private enum Type {
+    LEFT,
+    RIGHT,
+  }
+
+  protected abstract Type getType();
+
+  protected Left<L, R> asLeft() {
+    throw new AssertionError();
+  }
+
+  protected Right<L, R> asRight() {
+    throw new AssertionError();
+  }
+
   private static final class Left<L, R> extends Either<L, R> {
     private final L value;
 
@@ -71,14 +95,11 @@ public abstract class Either<L, R> {
     protected Left<L, R> asLeft() {
       return this;
     }
-  }
 
-  private static <L, R> Left<L, R> Left(L value) {
-    return new Left<>(value);
-  }
-
-  protected Left<L, R> asLeft() {
-    throw new AssertionError();
+    @Override
+    public L left() {
+      return value;
+    }
   }
 
   private static final class Right<L, R> extends Either<L, R> {
@@ -97,13 +118,10 @@ public abstract class Either<L, R> {
     protected Right<L, R> asRight() {
       return this;
     }
-  }
 
-  private static <L, R> Right<L, R> Right(R value) {
-    return new Right<>(value);
-  }
-
-  protected Right<L, R> asRight() {
-    throw new AssertionError();
+    @Override
+    public R right() {
+      return value;
+    }
   }
 }

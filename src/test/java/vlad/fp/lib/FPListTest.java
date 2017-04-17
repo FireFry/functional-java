@@ -1,6 +1,6 @@
 package vlad.fp.lib;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -13,8 +13,7 @@ public class FPListTest {
   }
 
   private static FPList<Integer> listOfSize(int size) {
-    Trampoline<FPList<Integer>> trampoline = listOfSizeTrampoline(size);
-    return trampoline.run();
+    return listOfSizeTrampoline(size).run();
   }
 
   private static Trampoline<FPList<Integer>> listOfSizeTrampoline(int size) {

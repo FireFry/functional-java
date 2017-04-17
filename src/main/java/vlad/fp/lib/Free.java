@@ -76,10 +76,11 @@ public abstract class Free<F, T> implements Parametrized<Parametrized<Free, F>, 
   }
 
   public T run(Function<Parametrized<F, Free<F, T>>, Free<F, T>> f, Functor<F> F) {
-    return Tailrec.run(resume(F), x -> x.fold(
-        left -> Tailrec.next(f.apply(left).resume(F)),
-        Tailrec::finish
-    ));
+    Either<Parametrized<F, Free<F, T>>, T> resume = resume(F);
+    while (resume.isLeft()) {
+      resume = f.apply(resume.left()).resume(F);
+    }
+    return resume.right();
   }
 
   private Either<Parametrized<F, Free<F, T>>, T> resume(Functor<F> F) {
