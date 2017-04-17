@@ -26,13 +26,6 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
     return new Cons<>(head, tail);
   }
 
-  public static <T> Seq<T> join(Seq<T> first, Seq<T> second) {
-    return first.fold(
-        () -> second,
-        (x, xs) -> cons(x, join(xs, second))
-    );
-  }
-
   private Seq() {
     // sealed trait
   }
@@ -47,7 +40,7 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
   public <R> Seq<R> flatMap(Function<T, Seq<R>> f) {
     return fold(
         Seq::nil,
-        (x, xs) -> join(f.apply(x), xs.flatMap(f))
+        (x, xs) -> f.apply(x).join(xs.flatMap(f))
     );
   }
 
@@ -67,6 +60,17 @@ public abstract class Seq<T> implements Parametrized<Seq, T> {
       default:
         throw new AssertionError();
     }
+  }
+
+  public Seq<T> join(Seq<T> other) {
+    return joinT(other).run();
+  }
+
+  private Trampoline<Seq<T>> joinT(Seq<T> other) {
+    return fold(
+        () -> Trampoline.done(other),
+        (x, xs) -> xs.joinT(other).map(tail -> cons(x, tail))
+    );
   }
 
   public <R> R foldLeft(R initial, Function2<R, T, R> acc) {
