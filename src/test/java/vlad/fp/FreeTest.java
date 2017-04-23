@@ -49,9 +49,7 @@ public class FreeTest {
         .thenReturn("bar");
 
     ConsoleIO consoleIO = new ConsoleIO(printWriter, bufferedReader);
-    Trampoline<String> trampoline = Trampoline.lift(consoleFProgram().foldMap(ConsoleF.FUNCTOR, Trampoline
-
-        .monad(), consoleIO));
+    Trampoline<String> trampoline = Trampoline.lift(consoleFProgram().foldMap(ConsoleF.FUNCTOR, Trampoline.monad(), consoleIO));
     trampoline.run();
 
     verify(printWriter).println("Enter the first line:");
