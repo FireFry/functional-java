@@ -4,6 +4,7 @@ import vlad.fp.Trampoline;
 import vlad.fp.Unit;
 import vlad.fp.higher.Parametrized;
 import vlad.fp.tailrec.TailRec;
+import vlad.fp.utils.Matcher;
 
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
@@ -76,9 +77,9 @@ public abstract class Future<A> implements Parametrized<Future,A> {
   public void listen(Function<A, Trampoline<Unit>> cb) {
     step().match(
         now -> Unit.run(() -> cb.apply(now.value()).run()),
-        suspend -> { throw new AssertionError(); },
+        suspend -> Matcher.unmatched(),
         async -> async.listener().apply(cb),
-        bindSuspend -> { throw new AssertionError(); },
+        bindSuspend -> Matcher.unmatched(),
         bindAsync -> bindAsync.listener().apply(s -> Trampoline.delay(() ->
             bindAsync.function().apply(s)).map(x -> Unit.run(() -> x.listen(cb)))
         )

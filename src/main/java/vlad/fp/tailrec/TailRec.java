@@ -1,5 +1,7 @@
 package vlad.fp.tailrec;
 
+import vlad.fp.utils.Matcher;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,7 +26,7 @@ public abstract class TailRec<A> {
     while (next.match(done -> false, suspend -> true)) {
       next = next.match(done -> done, suspend -> suspend.next().get());
     }
-    return next.match(Done::value, suspend -> { throw new AssertionError(); });
+    return next.match(Done::value, suspend -> Matcher.unmatched());
   }
 
 }
