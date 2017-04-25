@@ -5,7 +5,6 @@ import org.junit.Test;
 import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
-import vlad.fp.tailrec.TailRec;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
@@ -98,15 +97,15 @@ public class HaskellNinetyNine {
 
     private static <A> A elementAt(List<A> list, int k) {
         return k < 1 ? Matcher.unmatched() : new NestedFunction() {
-            TailRec<A> elementAt(List<A> list, int k) {
+            Trampoline<A> elementAt(List<A> list, int k) {
                 return list.matchVal(
                         Matcher::unmatched,
                         (head, tail) -> k == 1
-                                ? TailRec.done(head)
-                                : TailRec.suspend(() -> elementAt(tail, k - 1))
+                                ? Trampoline.done(head)
+                                : Trampoline.suspend(() -> elementAt(tail, k - 1))
                 );
             }
-        }.elementAt(list, k).eval();
+        }.elementAt(list, k).run();
     }
 
     /**
@@ -162,13 +161,13 @@ public class HaskellNinetyNine {
 
     private static <A> List<A> reverse(List<A> list) {
         return new NestedFunction() {
-            TailRec<List<A>> reverse(List<A> list, List<A> buffer) {
+            Trampoline<List<A>> reverse(List<A> list, List<A> buffer) {
                 return list.matchVal(
-                        () -> TailRec.done(buffer),
-                        (head, tail) -> TailRec.suspend(() -> reverse(tail, List.cons(head, buffer)))
+                        () -> Trampoline.done(buffer),
+                        (head, tail) -> Trampoline.suspend(() -> reverse(tail, List.cons(head, buffer)))
                 );
             }
-        }.reverse(list, List.nil()).eval();
+        }.reverse(list, List.nil()).run();
     }
 
     /**
@@ -515,4 +514,38 @@ public class HaskellNinetyNine {
             }
         }.duplicate(list).run();
     }
+
+    /**
+     * Problem 15
+     * ==========
+     *
+     * Replicate the elements of a list a given number of times.
+     *
+     * Example in Haskell:
+     *
+     * > repli "abc" 3
+     * "aaabbbccc"
+     */
+    @Test
+    public void problem15() {
+        assertEquals(listOfChars("aaabbbccc"), replicate(listOfChars("abc"), 3));
+    }
+
+    private static <A> List<A> replicate(List<A> list, int n) {
+        return new NestedFunction() {
+            Trampoline<List<A>> replicate(List<A> list, int n) {
+                return list.matchVal(
+                        () -> Trampoline.done(List.nil()),
+                        (x, xs) -> Trampoline.suspend(() -> replicate(n, x, xs, n))
+                );
+            }
+
+            Trampoline<List<A>> replicate(int i, A current, List<A> list, int n) {
+                return i < 1 ?
+                        Trampoline.suspend(() -> replicate(list, n)) :
+                        Trampoline.suspend(() -> replicate(i - 1, current, list, n)).map(tail -> List.cons(current, tail));
+            }
+        }.replicate(list, n).run();
+    }
+
 }
