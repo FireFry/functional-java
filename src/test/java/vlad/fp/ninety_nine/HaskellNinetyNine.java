@@ -556,7 +556,7 @@ public class HaskellNinetyNine {
      *
      * Example in Haskell:
      *
-     * *Main> dropEvery "abcdefghik" 3
+     * Prelude> dropEvery "abcdefghik" 3
      * "abdeghk"
      */
     @Test
@@ -587,7 +587,7 @@ public class HaskellNinetyNine {
      *
      * Example in Haskell:
      *
-     * *Main> split "abcdefghik" 3
+     * Prelude> split "abcdefghik" 3
      * ("abc", "defghik")
      *
      */
@@ -607,6 +607,39 @@ public class HaskellNinetyNine {
                 );
             }
         }.split(list, n, List.nil()).run();
+    }
+
+    /**
+     * Problem 18
+     * ==========
+     * 
+     * Extract a slice from a list.
+     * 
+     * Given two indices, i and k, the slice is the list containing the elements between the i'th and k'th element of 
+     * the original list (both limits included). Start counting the elements with 1.
+     * 
+     * Example in Haskell:
+     * 
+     * Prelude> slice ['a','b','c','d','e','f','g','h','i','k'] 3 7
+     * "cdefg"
+     */
+    @Test
+    public void problem18() {
+        assertEquals(listOfChars("cdefg"), slice(listOfChars("abcdefghik"), 3, 7));
+    }
+    
+    private static <A> List<A> slice(List<A> list, int i, int k) {
+        return new NestedFunction() {
+            Trampoline<List<A>> slice(List<A> list, int i, int k) {
+                return k < 1 ?
+                        Trampoline.done(List.nil()) :
+                        list.matchVal(
+                                () -> Trampoline.done(List.nil()),
+                                (x, xs) -> Trampoline.suspend(() -> slice(xs, i - 1, k - 1)).map(
+                                        tail -> i > 1 ? tail : List.cons(x, tail))
+                        );
+            }
+        }.slice(list, i, k).run();
     }
 
 }
