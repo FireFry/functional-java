@@ -13,6 +13,14 @@ import vlad.fp.utils.NestedFunction;
 import static org.junit.Assert.*;
 import static vlad.fp.list.ListMatcher.*;
 
+/**
+ * H-99: Ninety-Nine Haskell Problems
+ * ==================================
+ *
+ * Java translations of Ninety-Nine Haskell Problems.
+ *
+ * See: https://wiki.haskell.org/99_questions
+ */
 public class HaskellNinetyNine {
 
     private static List<Character> listOfChars(String s) {
@@ -336,7 +344,8 @@ public class HaskellNinetyNine {
                 Tuple.of(2, 'c'),
                 Tuple.of(2, 'a'),
                 Tuple.of(1, 'd'),
-                Tuple.of(4, 'e')), encode(listOfChars("aaaabccaadeeee")));
+                Tuple.of(4, 'e')
+        ), encode(listOfChars("aaaabccaadeeee")));
     }
 
     private <A> List<Tuple<Integer, A>> encode(List<A> list) {
