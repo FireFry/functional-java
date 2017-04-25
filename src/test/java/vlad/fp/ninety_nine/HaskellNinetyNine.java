@@ -4,9 +4,9 @@ import com.google.common.primitives.Chars;
 import org.junit.Test;
 import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
-import vlad.fp.list.Cons;
 import vlad.fp.list.List;
 import vlad.fp.tailrec.TailRec;
+import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
@@ -181,6 +181,37 @@ public class HaskellNinetyNine {
                 );
             }
         }.pack(list);
+    }
+
+    @Test
+    public void problem10() {
+        assertEquals(List.of(
+                Tuple.of(4, 'a'),
+                Tuple.of(1, 'b'),
+                Tuple.of(2, 'c'),
+                Tuple.of(2, 'a'),
+                Tuple.of(1, 'd'),
+                Tuple.of(4, 'e')), encode(listOfChars("aaaabccaadeeee")));
+    }
+
+    private <A> List<Tuple<Integer, A>> encode(List<A> list) {
+        return new NestedFunction() {
+            List<Tuple<Integer, A>> encode(List<A> list) {
+                return list.matchVal(
+                        List::nil,
+                        (x, xs) -> encode(x, 1, xs)
+                );
+            }
+
+            List<Tuple<Integer, A>> encode(A current, int count, List<A> list) {
+                return list.matchVal(
+                        () -> List.of(new Tuple<>(count, current)),
+                        (x, xs) -> x.equals(current) ?
+                                encode(x, count + 1, xs) :
+                                List.cons(new Tuple<>(count, current), encode(list))
+                );
+            }
+        }.encode(list);
     }
 
 }
