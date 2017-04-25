@@ -25,4 +25,9 @@ public final class Nil<A> extends List<A> {
     public <B> B matchVal(Supplier<B> nilCase, BiFunction<A, List<A>, B> consCase) {
         return nilCase.get();
     }
+
+    @Override
+    public String toString() {
+        return "[]";
+    }
 }

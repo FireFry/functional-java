@@ -9,11 +9,10 @@ import vlad.fp.tailrec.TailRec;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static vlad.fp.list.ListMatcher.any;
-import static vlad.fp.list.ListMatcher.nil;
+import java.util.Objects;
+
+import static org.junit.Assert.*;
+import static vlad.fp.list.ListMatcher.*;
 
 public class HaskellNinetyNine {
 
@@ -28,7 +27,7 @@ public class HaskellNinetyNine {
     }
 
     private static <A> A last(List<A> list) {
-        return list.matchRec(any(x -> nil(() -> x)));
+        return list.matchRec(whenCons(x -> whenNil(() -> x)));
     }
 
     @Test
@@ -38,7 +37,7 @@ public class HaskellNinetyNine {
     }
 
     private static <A> A butLast(List<A> list) {
-        return list.matchRec(any(x -> any(() -> nil(() -> x))));
+        return list.matchRec(whenCons(x -> whenCons(() -> whenNil(() -> x))));
     }
 
     @Test
@@ -146,6 +145,18 @@ public class HaskellNinetyNine {
     @SafeVarargs
     static <A> NestedList<A> nlist(NestedList<A>... list) {
         return new NestedList<>(Either.right(List.copyOf(list)));
+    }
+
+    @Test
+    public void problem8() {
+        assertEquals(listOfChars("abcade"), compress(listOfChars("aaaabccaadeeee")));
+    }
+
+    private static <A> List<A> compress(List<A> list) {
+        return list.match(
+                whenCons((x, tailX) -> whenCons(y -> done(() -> x.equals(y) ? compress(tailX) : List.cons(x, compress(tailX))))),
+                whenOther(() -> list)
+        );
     }
 
 }

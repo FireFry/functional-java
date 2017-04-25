@@ -24,4 +24,9 @@ public final class None<A> extends Maybe<A> {
   public <B> B matchVal(Supplier<B> noneCase, Function<A, B> someCase) {
     return noneCase.get();
   }
+
+  @Override
+  public A orElse(Supplier<A> elseCase) {
+    return elseCase.get();
+  }
 }

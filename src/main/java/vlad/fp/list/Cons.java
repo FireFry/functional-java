@@ -49,4 +49,9 @@ public final class Cons<A> extends List<A> {
         result = 31 * result + tail.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return head + " : " + tail;
+    }
 }

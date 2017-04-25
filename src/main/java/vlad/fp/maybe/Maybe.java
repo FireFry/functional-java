@@ -29,4 +29,6 @@ public abstract class Maybe<A> {
     return flatMap(x -> Maybe.some(f.apply(x)));
   }
 
+  public abstract A orElse(Supplier<A> elseCase);
+
 }

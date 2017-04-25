@@ -10,6 +10,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static vlad.fp.list.ListMatcher.whenTail;
+
 public abstract class List<A> {
 
     public static <A> List<A> cons(A head, List<A> tail) {
@@ -43,22 +45,30 @@ public abstract class List<A> {
 
     public abstract <B> B matchVal(Supplier<B> nilCase, BiFunction<A, List<A>, B> consCase);
 
-    public <B> Maybe<B> match(ListMatcher<A, B> matcher) {
-        return matcher.match(this);
+    @SafeVarargs
+    public final <B> B match(ListMatcher<A, B>... matchers) {
+        return new NestedFunction() {
+            B match(List<A> list, List<ListMatcher<A, B>> matchers) {
+                return matchers.matchVal(
+                        Matcher::unmatched,
+                        (head, tail) -> head.match(list).matchVal(
+                                () -> match(list, tail),
+                                Function.identity()
+                        )
+                );
+            }
+        }.match(this, List.copyOf(matchers));
     }
 
     public <B> B matchRec(ListMatcher<A, B> matcher) {
         return new NestedFunction() {
-            TailRec<B> matchRec(List<A> list, ListMatcher<A, B> matcher) {
-                return list.match(matcher).matchVal(
-                        () -> list.match(
-                                nil -> Matcher.unmatched(),
-                                cons -> TailRec.suspend(() -> matchRec(cons.tail(), matcher))
-                        ),
-                        TailRec::done
+            B matchRec(List<A> list, ListMatcher<A, B> matcher) {
+                return list.match(
+                        matcher,
+                        whenTail(tail -> matchRec(tail, matcher))
                 );
             }
-        }.matchRec(this, matcher).eval();
+        }.matchRec(this, matcher);
     }
 
 }
