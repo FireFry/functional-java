@@ -9,8 +9,7 @@ import vlad.fp.tailrec.TailRec;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
-
-import java.util.Objects;
+import vlad.fp.utils.TypeAlias;
 
 import static org.junit.Assert.*;
 import static vlad.fp.list.ListMatcher.*;
@@ -421,29 +420,9 @@ public class HaskellNinetyNine {
         }.encode(list);
     }
     
-    static final class RunLength<A> {
-        final Either<A, Tuple<Integer, A>> either;
-
-        RunLength(Either<A, Tuple<Integer, A>> either) {
-            this.either = Objects.requireNonNull(either);
-        }
-
-        @Override
-        public String toString() {
-            return either.toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RunLength<?> runLength = (RunLength<?>) o;
-            return either.equals(runLength.either);
-        }
-
-        @Override
-        public int hashCode() {
-            return either.hashCode();
+    static final class RunLength<A> extends TypeAlias<Either<A, Tuple<Integer, A>>> {
+        RunLength(Either<A, Tuple<Integer, A>> delegate) {
+            super(delegate);
         }
     }
     
