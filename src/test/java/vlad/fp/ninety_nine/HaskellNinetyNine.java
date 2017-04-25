@@ -19,6 +19,20 @@ public class HaskellNinetyNine {
         return List.copyOf(Chars.asList(s.toCharArray()).toArray(new Character[s.length()]));
     }
 
+    /**
+     * Problem 1
+     * =========
+     *
+     * Find the last element of a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> myLast [1,2,3,4]
+     * 4
+     *
+     * Prelude> myLast ['x','y','z']
+     * 'z'
+     */
     @Test
     public void problem1() {
         assertEquals(4, (int) last(List.of(1, 2, 3, 4)));
@@ -29,6 +43,20 @@ public class HaskellNinetyNine {
         return list.matchRec(whenCons(x -> whenNil(() -> x)));
     }
 
+    /**
+     * Problem 2
+     * =========
+     *
+     * Find the last but one element of a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> myButLast [1,2,3,4]
+     * 3
+     *
+     * Prelude> myButLast ['a'..'z']
+     * 'y'
+     */
     @Test
     public void problem2() {
         assertEquals(3, (int) butLast(List.of(1, 2, 3, 4)));
@@ -39,6 +67,20 @@ public class HaskellNinetyNine {
         return list.matchRec(whenCons(x -> whenCons(() -> whenNil(() -> x))));
     }
 
+    /**
+     * Problem 3
+     * =========
+     *
+     * Find the K'th element of a list. The first element in the list is number 1.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> elementAt [1,2,3] 2
+     * 2
+     *
+     * Prelude> elementAt "haskell" 5
+     * 'e'
+     */
     @Test
     public void problem3() {
         assertEquals(2, (int) elementAt(List.of(1, 2, 3), 2));
@@ -58,6 +100,20 @@ public class HaskellNinetyNine {
         }.elementAt(list, k).eval();
     }
 
+    /**
+     * Problem 4
+     * =========
+     *
+     * Find the number of elements of a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> myLength [123, 456, 789]
+     * 3
+     *
+     * Prelude> myLength "Hello, world!"
+     * 13
+     */
     @Test
     public void problem4() {
         assertEquals(3, length(List.of(123, 456, 789)));
@@ -75,6 +131,20 @@ public class HaskellNinetyNine {
         }.length(list).run();
     }
 
+    /**
+     * Problem 5
+     * =========
+     *
+     * Reverse a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> myReverse "A man, a plan, a canal, panama!"
+     * "!amanap ,lanac a ,nalp a ,nam A"
+     *
+     * Prelude> myReverse [1,2,3,4]
+     * [4,3,2,1]
+     */
     @Test
     public void problem5() {
         assertEquals(listOfChars("!amanap ,lanac a ,nalp a ,nam A"), reverse(listOfChars("A man, a plan, a canal, panama!")));
@@ -92,6 +162,23 @@ public class HaskellNinetyNine {
         }.reverse(list, List.nil()).eval();
     }
 
+    /**
+     * Problem 6
+     * =========
+     *
+     * Find out whether a list is a palindrome. A palindrome can be read forward or backward; e.g. (x a m a x).
+     *
+     * Example in Haskell:
+     *
+     * Prelude> isPalindrome [1,2,3]
+     * False
+     *
+     * Prelude> isPalindrome "madamimadam"
+     * True
+     *
+     * Prelude> isPalindrome [1,2,4,8,16,8,4,2,1]
+     * True
+     */
     @Test
     public void problem6() {
         assertFalse(isPalindrome(List.of(1, 2, 3)));
@@ -103,6 +190,29 @@ public class HaskellNinetyNine {
         return list.equals(reverse(list));
     }
 
+    /**
+     * Problem 7
+     * =========
+     *
+     * Flatten a nested list structure.
+     *
+     * Transform a list, possibly holding lists as elements into a `flat' list by replacing each list with its elements (recursively).
+     *
+     * Example in Haskell:
+     *
+     * We have to define a new data type, because lists in Haskell are homogeneous.
+     *
+     * data NestedList a = Elem a | List [NestedList a]
+     *
+     * Prelude> flatten (Elem 5)
+     * [5]
+     *
+     * Prelude> flatten (List [Elem 1, List [Elem 2, List [Elem 3, Elem 4], Elem 5]])
+     * [1,2,3,4,5]
+     *
+     * Prelude> flatten (List [])
+     * []
+     */
     @Test
     public void problem7() {
         assertEquals(List.of(5), flatten(nelem(5)));
@@ -144,6 +254,19 @@ public class HaskellNinetyNine {
         return new NestedList<>(Either.right(List.copyOf(list)));
     }
 
+    /**
+     * Problem 8
+     * =========
+     *
+     * Eliminate consecutive duplicates of list elements.
+     *
+     * If a list contains repeated elements they should be replaced with a single copy of the element. The order of the elements should not be changed.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> compress "aaaabccaadeeee"
+     * "abcade"
+     */
     @Test
     public void problem8() {
         assertEquals(listOfChars("abcade"), compress(listOfChars("aaaabccaadeeee")));
@@ -156,6 +279,17 @@ public class HaskellNinetyNine {
         );
     }
 
+    /**
+     * Problem 9
+     * =========
+     *
+     * Pack consecutive duplicates of list elements into sublists. If a list contains repeated elements they should be placed in separate sublists.
+     * 
+     * Example in Haskell:
+     * 
+     * Prelude> pack ['a', 'a', 'a', 'a', 'b', 'c', 'c', 'a', 'a', 'd', 'e', 'e', 'e', 'e']
+     * ["aaaa","b","cc","aa","d","eeee"]
+     */
     @Test
     public void problem9() {
         assertEquals(List.of("aaaa", "b", "cc", "aa", "d", "eeee").map(s -> listOfChars(s)), pack(listOfChars("aaaabccaadeeee")));
@@ -181,6 +315,19 @@ public class HaskellNinetyNine {
         }.pack(list);
     }
 
+    /**
+     * Prelude 10
+     * ==========
+     *
+     * Run-length encoding of a list. Use the result of problem P09 to implement the so-called run-length encoding data
+     * compression method. Consecutive duplicates of elements are encoded as lists (N E) where N is the number of
+     * duplicates of the element E.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> encode "aaaabccaadeeee"
+     * [(4,'a'),(1,'b'),(2,'c'),(2,'a'),(1,'d'),(4,'e')]
+     */
     @Test
     public void problem10() {
         assertEquals(List.of(
