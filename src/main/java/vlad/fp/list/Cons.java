@@ -31,4 +31,22 @@ public final class Cons<A> extends List<A> {
     public <B> B matchVal(Supplier<B> nilCase, BiFunction<A, List<A>, B> consCase) {
         return consCase.apply(head, tail);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Cons<?> cons = (Cons<?>) o;
+
+        if (!head.equals(cons.head)) return false;
+        return tail.equals(cons.tail);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = head.hashCode();
+        result = 31 * result + tail.hashCode();
+        return result;
+    }
 }

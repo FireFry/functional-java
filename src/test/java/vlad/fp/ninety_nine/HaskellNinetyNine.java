@@ -76,4 +76,21 @@ public class HaskellNinetyNine {
         }.length(list).run();
     }
 
+    @Test
+    public void problem5() {
+        assertEquals(listOfChars("!amanap ,lanac a ,nalp a ,nam A"), reverse(listOfChars("A man, a plan, a canal, panama!")));
+        assertEquals(List.of(4, 3, 2, 1), reverse(List.of(1, 2, 3, 4)));
+    }
+
+    private static <A> List<A> reverse(List<A> list) {
+        return new NestedFunction() {
+            TailRec<List<A>> reverse(List<A> list, List<A> buffer) {
+                return list.matchVal(
+                        () -> TailRec.done(buffer),
+                        (head, tail) -> TailRec.suspend(() -> reverse(tail, List.cons(head, buffer)))
+                );
+            }
+        }.reverse(list, List.nil()).eval();
+    }
+
 }
