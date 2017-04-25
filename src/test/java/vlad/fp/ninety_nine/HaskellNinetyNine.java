@@ -5,6 +5,7 @@ import org.junit.Test;
 import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
+import vlad.fp.maybe.Maybe;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
@@ -677,5 +678,35 @@ public class HaskellNinetyNine {
                 return drop(list, Math.floorMod(n, length(list)), List.nil()).match((first, second) -> second.append(first));
             }
         }.rotate(list, n);
+    }
+
+    /**
+     * Problem 20
+     * ==========
+     *
+     * Remove the K'th element from a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> removeAt 2 "abcd"
+     * ('b',"acd")
+     */
+    @Test
+    public void problem20() {
+        assertEquals(Tuple.of('b', listOfChars("acd")), removeAt(2, listOfChars("abcd")));
+    }
+
+    private static <A> Tuple<A, List<A>> removeAt(int n, List<A> list) {
+        return new NestedFunction() {
+            Trampoline<Tuple<A, List<A>>> removeAt(List<A> buffer, int n, List<A> list) {
+                return list.matchVal(
+                        Matcher::unmatched,
+                        (x, xs) -> n <= 1 ?
+                                Trampoline.done(Tuple.of(x, reverse(buffer).append(xs))) :
+                                Trampoline.suspend(() -> removeAt(List.cons(x, buffer), n - 1, xs))
+
+                );
+            }
+        }.removeAt(List.nil(), n, list).run();
     }
 }
