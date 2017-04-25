@@ -391,11 +391,11 @@ public class HaskellNinetyNine {
     public void problem11() {
         assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
     }
-    
+
     static <A> RunLength<A> mult(int count, A elem) {
         return new RunLength<>(Either.right(Tuple.of(count, elem)));
     }
-    
+
     static <A> RunLength<A> single(A elem) {
         return new RunLength<>(Either.left(elem));
     }
@@ -421,9 +421,46 @@ public class HaskellNinetyNine {
     }
     
     static final class RunLength<A> extends TypeAlias<Either<A, Tuple<Integer, A>>> {
-        RunLength(Either<A, Tuple<Integer, A>> delegate) {
+        private RunLength(Either<A, Tuple<Integer, A>> delegate) {
             super(delegate);
         }
     }
-    
+
+    /**
+     * Problem 12
+     * ==========
+     *
+     * Decode a run-length encoded list.
+     *
+     * Given a run-length code list generated as specified in problem 11. Construct its uncompressed version.
+     *
+     * Example in Haskell:
+     *
+     * P12> decodeModified [Multiple 4 'a',Single 'b',Multiple 2 'c',Multiple 2 'a',Single 'd',Multiple 4 'e']
+     * "aaaabccaadeeee"
+     */
+    @Test
+    public void problem12() {
+        assertEquals(listOfChars("aaaabccaadeeee"), decodeModified(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e'))));
+    }
+
+    private static <A> List<A> decodeModified(List<RunLength<A>> list) {
+        return new NestedFunction() {
+            Trampoline<List<A>> decode(List<RunLength<A>> list) {
+                return list.matchVal(
+                        () -> Trampoline.done(List.nil()),
+                        (head, tail) -> head.get().matchVal(
+                                single -> Trampoline.suspend(() -> decode(1, single, tail)),
+                                multiple -> Trampoline.suspend(() -> decode(multiple.first(), multiple.second(), tail))
+                        )
+                );
+            }
+
+            Trampoline<List<A>> decode(int count, A value, List<RunLength<A>> list) {
+                return count == 0 ?
+                        Trampoline.suspend(() -> decode(list)) :
+                        Trampoline.suspend(() -> decode(count - 1, value, list).map(tail -> List.cons(value, tail)));
+            }
+        }.decode(list).run();
+    }
 }
