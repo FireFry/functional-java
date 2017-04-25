@@ -23,6 +23,11 @@ public final class Cons<A> extends List<A> {
     }
 
     @Override
+    public <B> List<B> map(Function<A, B> function) {
+        return List.cons(function.apply(head), tail.map(function));
+    }
+
+    @Override
     public <B> B match(Function<Nil<A>, B> nilCase, Function<Cons<A>, B> consCase) {
         return consCase.apply(this);
     }

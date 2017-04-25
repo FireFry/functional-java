@@ -4,12 +4,11 @@ import com.google.common.primitives.Chars;
 import org.junit.Test;
 import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
+import vlad.fp.list.Cons;
 import vlad.fp.list.List;
 import vlad.fp.tailrec.TailRec;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
-
-import java.util.Objects;
 
 import static org.junit.Assert.*;
 import static vlad.fp.list.ListMatcher.*;
@@ -157,6 +156,30 @@ public class HaskellNinetyNine {
                 whenCons((x, tailX) -> whenCons(y -> done(() -> x.equals(y) ? compress(tailX) : List.cons(x, compress(tailX))))),
                 whenOther(() -> list)
         );
+    }
+
+    @Test
+    public void problem9() {
+        assertEquals(List.of("aaaa", "b", "cc", "aa", "d", "eeee").map(s -> listOfChars(s)), pack(listOfChars("aaaabccaadeeee")));
+    }
+
+    private static <A> List<List<A>> pack(List<A> list) {
+        return new NestedFunction() {
+            List<List<A>> pack(List<A> buffer, List<A> list) {
+                return buffer.matchVal(
+                        () -> list.matchVal(
+                                List::nil,
+                                (x, xs) -> pack(List.cons(x, buffer), xs)
+                        ),
+                        (head, tail) -> list.matchVal(
+                                () -> List.of(buffer),
+                                (x, xs) -> x.equals(head) ?
+                                        pack(List.cons(x, buffer), xs) :
+                                        List.cons(buffer, pack(List.nil(), list))
+                        )
+                );
+            }
+        }.pack(Cons.nil(), list);
     }
 
 }

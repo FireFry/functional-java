@@ -41,6 +41,8 @@ public abstract class List<A> {
 
     }
 
+    public abstract <B> List<B> map(Function<A, B> function);
+
     public abstract <B> B match(Function<Nil<A>, B> nilCase, Function<Cons<A>, B> consCase);
 
     public abstract <B> B matchVal(Supplier<B> nilCase, BiFunction<A, List<A>, B> consCase);
