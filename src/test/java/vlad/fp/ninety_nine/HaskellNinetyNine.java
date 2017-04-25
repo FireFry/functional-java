@@ -165,21 +165,22 @@ public class HaskellNinetyNine {
 
     private static <A> List<List<A>> pack(List<A> list) {
         return new NestedFunction() {
-            List<List<A>> pack(List<A> buffer, List<A> list) {
-                return buffer.matchVal(
-                        () -> list.matchVal(
-                                List::nil,
-                                (x, xs) -> pack(List.cons(x, buffer), xs)
-                        ),
-                        (head, tail) -> list.matchVal(
-                                () -> List.of(buffer),
-                                (x, xs) -> x.equals(head) ?
-                                        pack(List.cons(x, buffer), xs) :
-                                        List.cons(buffer, pack(List.nil(), list))
-                        )
+            List<List<A>> pack(List<A> list) {
+                return list.matchVal(
+                        List::nil,
+                        (x, xs) -> pack(x, List.cons(x), xs)
                 );
             }
-        }.pack(Cons.nil(), list);
+
+            List<List<A>> pack(A current, List<A> buffer, List<A> list) {
+                return list.matchVal(
+                        () -> List.of(buffer),
+                        (x, xs) -> x.equals(current) ?
+                                pack(x, List.cons(x, buffer), xs) :
+                                List.cons(buffer, pack(list))
+                );
+            }
+        }.pack(list);
     }
 
 }

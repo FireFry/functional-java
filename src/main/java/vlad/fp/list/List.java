@@ -14,6 +14,10 @@ import static vlad.fp.list.ListMatcher.whenTail;
 
 public abstract class List<A> {
 
+    public static <A> List<A> cons(A head) {
+        return new Cons<>(head, nil());
+    }
+
     public static <A> List<A> cons(A head, List<A> tail) {
         return new Cons<>(head, tail);
     }
