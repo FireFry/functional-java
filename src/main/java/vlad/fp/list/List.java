@@ -1,16 +1,14 @@
 package vlad.fp.list;
 
+import static vlad.fp.list.ListMatcher.whenTail;
+
 import vlad.fp.Trampoline;
-import vlad.fp.maybe.Maybe;
-import vlad.fp.tailrec.TailRec;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static vlad.fp.list.ListMatcher.whenTail;
 
 public abstract class List<A> {
 
@@ -39,6 +37,25 @@ public abstract class List<A> {
                         : Trampoline.done(List.nil());
             }
         }.copyOf(values, 0).run();
+    }
+
+    public static <A> List<A> copyOf(Iterable<A> iterable) {
+        List<A> buffer = List.nil();
+        for (A value : iterable) {
+            buffer = List.cons(value, buffer);
+        }
+        return reverse(buffer);
+    }
+
+    private static <A> List<A> reverse(List<A> list) {
+        return new NestedFunction() {
+            Trampoline<List<A>> reverse(List<A> list, List<A> buffer) {
+                return list.matchVal(
+                    () -> Trampoline.done(buffer),
+                    (head, tail) -> Trampoline.suspend(() -> reverse(tail, cons(head, buffer)))
+                );
+            }
+        }.reverse(list, nil()).run();
     }
 
     List() {

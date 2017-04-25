@@ -1,18 +1,23 @@
 package vlad.fp.ninety_nine;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static vlad.fp.list.ListMatcher.done;
+import static vlad.fp.list.ListMatcher.when;
+import static vlad.fp.list.ListMatcher.whenCons;
+import static vlad.fp.list.ListMatcher.whenNil;
+import static vlad.fp.list.ListMatcher.whenOther;
+
 import com.google.common.primitives.Chars;
 import org.junit.Test;
 import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
-import vlad.fp.maybe.Maybe;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 import vlad.fp.utils.TypeAlias;
-
-import static org.junit.Assert.*;
-import static vlad.fp.list.ListMatcher.*;
 
 /**
  * H-99: Ninety-Nine Haskell Problems
@@ -25,7 +30,7 @@ import static vlad.fp.list.ListMatcher.*;
 public class HaskellNinetyNine {
 
     private static List<Character> listOfChars(String s) {
-        return List.copyOf(Chars.asList(s.toCharArray()).toArray(new Character[s.length()]));
+        return List.copyOf(Chars.asList(s.toCharArray()));
     }
 
     /**
