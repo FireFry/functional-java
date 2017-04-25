@@ -642,4 +642,40 @@ public class HaskellNinetyNine {
         }.slice(list, i, k).run();
     }
 
+    /**
+     * Problem 19
+     * ==========
+     *
+     * Rotate a list N places to the left.
+     *
+     * Hint: Use the predefined functions length and (++).
+     *
+     * Examples in Haskell:
+     *
+     * Prelude> rotate ['a','b','c','d','e','f','g','h'] 3
+     * "defghabc"
+     *
+     * Prelude> rotate ['a','b','c','d','e','f','g','h'] (-2)
+     * "ghabcdef"
+     */
+    @Test
+    public void problem19() {
+        assertEquals(listOfChars("defghabc"), rotate(listOfChars("abcdefgh"), 3));
+        assertEquals(listOfChars("ghabcdef"), rotate(listOfChars("abcdefgh"), -2));
+    }
+
+    private static <A> List<A> rotate(List<A> list, int n) {
+        return new NestedFunction() {
+            Tuple<List<A>, List<A>> drop(List<A> list, int n, List<A> buffer) {
+                return list.match(
+                        when(n > 0, () -> whenCons((x, xs) -> done(() -> drop(xs, n - 1, List.cons(x, buffer))))),
+                        whenOther(() -> Tuple.of(reverse(buffer), list))
+                );
+            }
+
+            List<A> rotate(List<A> list, int n) {
+                return drop(list, Math.floorMod(n, length(list)), List.nil()).match((first, second) -> second.append(first));
+            }
+        }.rotate(list, n);
+    }
 }

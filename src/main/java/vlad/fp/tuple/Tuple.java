@@ -1,6 +1,7 @@
 package vlad.fp.tuple;
 
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 public final class Tuple<F, S> {
     private final F first;
@@ -21,6 +22,10 @@ public final class Tuple<F, S> {
 
     public S second() {
         return second;
+    }
+
+    public <B> B match(BiFunction<F, S, B> matcher) {
+        return matcher.apply(first, second);
     }
 
     @Override

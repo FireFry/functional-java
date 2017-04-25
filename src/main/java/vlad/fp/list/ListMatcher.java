@@ -37,6 +37,10 @@ public final class ListMatcher<A, B> {
         );
     }
 
+    public static <A, B> ListMatcher<A, B> when(boolean condition, Supplier<ListMatcher<A, B>> next) {
+        return condition ? next.get() : wrap(list -> Maybe.none());
+    }
+
     public static <A, B> ListMatcher<A, B> whenCons(BiFunction<A, List<A>, ListMatcher<A, B>> next) {
         return wrap(list -> list.matchVal(
                 Maybe::none,

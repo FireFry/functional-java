@@ -77,4 +77,14 @@ public abstract class List<A> {
         }.matchRec(this, matcher);
     }
 
+    public List<A> append(List<A> other) {
+        return new NestedFunction() {
+            Trampoline<List<A>> append(List<A> list, List<A> other) {
+                return list.matchVal(
+                        () -> Trampoline.done(other),
+                        (x, xs) -> Trampoline.suspend(() -> append(xs, other).map(tail -> Cons.cons(x, tail)))
+                );
+            }
+        }.append(this, other).run();
+    }
 }
