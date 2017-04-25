@@ -3,19 +3,22 @@ package vlad.fp.ninety_nine;
 import com.google.common.primitives.Chars;
 import org.junit.Test;
 import vlad.fp.Trampoline;
+import vlad.fp.either.Either;
 import vlad.fp.list.List;
 import vlad.fp.tailrec.TailRec;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static vlad.fp.list.ListMatcher.any;
 import static vlad.fp.list.ListMatcher.nil;
 
 public class HaskellNinetyNine {
 
     private static List<Character> listOfChars(String s) {
-        return List.of(Chars.asList(s.toCharArray()).toArray(new Character[s.length()]));
+        return List.copyOf(Chars.asList(s.toCharArray()).toArray(new Character[s.length()]));
     }
 
     @Test
@@ -91,6 +94,58 @@ public class HaskellNinetyNine {
                 );
             }
         }.reverse(list, List.nil()).eval();
+    }
+
+    @Test
+    public void problem6() {
+        assertFalse(isPalindrome(List.of(1, 2, 3)));
+        assertTrue(isPalindrome(listOfChars("madamimadam")));
+        assertTrue(isPalindrome(List.of(1, 2, 4, 8, 16, 8, 4, 2, 1)));
+    }
+
+    private static <A> boolean isPalindrome(List<A> list) {
+        return list.equals(reverse(list));
+    }
+
+    @Test
+    public void problem7() {
+        assertEquals(List.of(5), flatten(nelem(5)));
+        assertEquals(List.of(1, 2, 3, 4, 5), flatten(nlist(nelem(1), nlist(nelem(2), nlist(nelem(3), nelem(4)), nelem(5)))));
+        assertEquals(List.nil(), flatten(nlist()));
+    }
+
+    private static <A> List<A> flatten(NestedList<A> nestedList) {
+        return nestedList.either.matchVal(
+                List::of,
+                list -> new NestedFunction() {
+                    List<A> flatten(List<NestedList<A>> list, List<A> buffer) {
+                        return list.matchVal(
+                                () -> buffer,
+                                (head, tail) -> head.either.matchVal(
+                                        a -> List.cons(a, flatten(tail, buffer)),
+                                        nested -> flatten(nested, flatten(tail, buffer))
+                                )
+                        );
+                    }
+                }.flatten(list, List.nil())
+        );
+    }
+
+    static final class NestedList<A> {
+        private final Either<A, List<NestedList<A>>> either;
+
+        private NestedList(Either<A, List<NestedList<A>>> either) {
+            this.either = either;
+        }
+    }
+
+    static <A> NestedList<A> nelem(A a) {
+        return new NestedList<>(Either.left(a));
+    }
+
+    @SafeVarargs
+    static <A> NestedList<A> nlist(NestedList<A>... list) {
+        return new NestedList<>(Either.right(List.copyOf(list)));
     }
 
 }

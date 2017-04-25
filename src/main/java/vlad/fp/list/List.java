@@ -20,6 +20,7 @@ public abstract class List<A> {
         return Nil.get();
     }
 
+    @SafeVarargs
     public static <A> List<A> of(A... values) {
         return copyOf(values);
     }
