@@ -10,6 +10,8 @@ import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
+import java.util.Objects;
+
 import static org.junit.Assert.*;
 import static vlad.fp.list.ListMatcher.*;
 
@@ -372,4 +374,77 @@ public class HaskellNinetyNine {
         }.encode(list);
     }
 
+    /**
+     * Problem 11
+     * ==========
+     *
+     * Modified run-length encoding.
+     * 
+     * Modify the result of problem 10 in such a way that if an element has no duplicates it is simply copied into the 
+     * result list. Only elements with duplicates are transferred as (N E) lists.
+     * 
+     * Example in Haskell:
+     * 
+     * P11> encodeModified "aaaabccaadeeee"
+     * [Multiple 4 'a',Single 'b',Multiple 2 'c', Multiple 2 'a',Single 'd',Multiple 4 'e']
+     */
+    @Test
+    public void problem11() {
+        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
+    }
+    
+    static <A> RunLength<A> mult(int count, A elem) {
+        return new RunLength<>(Either.right(Tuple.of(count, elem)));
+    }
+    
+    static <A> RunLength<A> single(A elem) {
+        return new RunLength<>(Either.left(elem));
+    }
+
+    static <A> List<RunLength<A>> encodeModified(List<A> list) {
+        return new NestedFunction() {
+            List<RunLength<A>> encode(List<A> list) {
+                return list.matchVal(
+                        List::nil,
+                        (x, xs) -> encode(x, 1, xs)
+                );
+            }
+
+            List<RunLength<A>> encode(A current, int count, List<A> list) {
+                return list.matchVal(
+                        () -> List.of(mult(count, current)),
+                        (x, xs) -> x.equals(current) ?
+                                encode(x, count + 1, xs) :
+                                List.cons(count == 1 ? single(current) : mult(count, current), encode(list))
+                );
+            }
+        }.encode(list);
+    }
+    
+    static final class RunLength<A> {
+        final Either<A, Tuple<Integer, A>> either;
+
+        RunLength(Either<A, Tuple<Integer, A>> either) {
+            this.either = Objects.requireNonNull(either);
+        }
+
+        @Override
+        public String toString() {
+            return either.toString();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RunLength<?> runLength = (RunLength<?>) o;
+            return either.equals(runLength.either);
+        }
+
+        @Override
+        public int hashCode() {
+            return either.hashCode();
+        }
+    }
+    
 }
