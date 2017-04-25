@@ -392,14 +392,6 @@ public class HaskellNinetyNine {
         assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
     }
 
-    static <A> RunLength<A> mult(int count, A elem) {
-        return new RunLength<>(Either.right(Tuple.of(count, elem)));
-    }
-
-    static <A> RunLength<A> single(A elem) {
-        return new RunLength<>(Either.left(elem));
-    }
-
     static <A> List<RunLength<A>> encodeModified(List<A> list) {
         return new NestedFunction() {
             List<RunLength<A>> encode(List<A> list) {
@@ -419,7 +411,15 @@ public class HaskellNinetyNine {
             }
         }.encode(list);
     }
-    
+
+    static <A> RunLength<A> mult(int count, A elem) {
+        return new RunLength<>(Either.right(Tuple.of(count, elem)));
+    }
+
+    static <A> RunLength<A> single(A elem) {
+        return new RunLength<>(Either.left(elem));
+    }
+
     static final class RunLength<A> extends TypeAlias<Either<A, Tuple<Integer, A>>> {
         private RunLength(Either<A, Tuple<Integer, A>> delegate) {
             super(delegate);
@@ -462,5 +462,57 @@ public class HaskellNinetyNine {
                         Trampoline.suspend(() -> decode(count - 1, value, list).map(tail -> List.cons(value, tail)));
             }
         }.decode(list).run();
+    }
+
+    /**
+     * Problem 13
+     * ==========
+     *
+     * Run-length encoding of a list (direct solution).
+     *
+     * Implement the so-called run-length encoding data compression method directly.
+     * I.e. don't explicitly create the sublists containing the duplicates, as in problem 9, but only count them.
+     * As in problem P11, simplify the result list by replacing the singleton lists (1 X) by X.
+     *
+     * Example in Haskell:
+     *
+     * P13> encodeDirect "aaaabccaadeeee"
+     * [Multiple 4 'a',Single 'b',Multiple 2 'c', Multiple 2 'a',Single 'd',Multiple 4 'e']
+     */
+    @Test
+    public void problem13() {
+        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
+    }
+
+    static <A> List<RunLength<A>> encodeDirect(List<A> list) {
+        // Kinda implemented already...
+        return encodeModified(list);
+    }
+
+    /**
+     * Problem 14
+     * ==========
+     *
+     * Duplicate the elements of a list.
+     *
+     * Example in Haskell:
+     *
+     * > dupli [1, 2, 3]
+     * [1,1,2,2,3,3]
+     */
+    @Test
+    public void problem14() {
+        assertEquals(List.of(1, 1, 2, 2, 3, 3), duplicate(List.of(1, 2, 3)));
+    }
+
+    private static <A> List<A> duplicate(List<A> list) {
+        return new NestedFunction() {
+            Trampoline<List<A>> duplicate(List<A> list) {
+                return list.matchVal(
+                        () -> Trampoline.done(List.nil()),
+                        (x, xs) -> Trampoline.suspend(() -> duplicate(xs).map(tail -> List.cons(x, List.cons(x, tail))))
+                );
+            }
+        }.duplicate(list).run();
     }
 }
