@@ -548,4 +548,30 @@ public class HaskellNinetyNine {
         }.replicate(list, n).run();
     }
 
+    /**
+     * Drop every N'th element from a list.
+     *
+     * Example in Haskell:
+     *
+     * *Main> dropEvery "abcdefghik" 3
+     * "abdeghk"
+     */
+    @Test
+    public void problem16() {
+        assertEquals(listOfChars("abdeghk"), dropEvery(listOfChars("abcdefghik"), 3));
+    }
+
+    private <A> List<A> dropEvery(List<A> list, int n) {
+        return new NestedFunction() {
+            Trampoline<List<A>> dropEvery(List<A> list, int n, int countDown) {
+                return list.matchVal(
+                        () -> Trampoline.done(List.nil()),
+                        (x, xs) -> countDown == 0 ?
+                                Trampoline.suspend(() -> dropEvery(xs, n, n - 1)) :
+                                Trampoline.suspend(() -> dropEvery(xs, n, countDown - 1).map(tail -> List.cons(x, tail)))
+                );
+            }
+        }.dropEvery(list, n, n - 1).run();
+    }
+
 }
