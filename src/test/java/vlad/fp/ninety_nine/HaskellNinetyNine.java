@@ -229,20 +229,24 @@ public class HaskellNinetyNine {
     }
 
     private static <A> List<A> flatten(NestedList<A> nestedList) {
-        return nestedList.either.matchVal(
-                List::of,
-                list -> new NestedFunction() {
-                    List<A> flatten(List<NestedList<A>> list, List<A> buffer) {
-                        return list.matchVal(
-                                () -> buffer,
-                                (head, tail) -> head.either.matchVal(
-                                        a -> List.cons(a, flatten(tail, buffer)),
-                                        nested -> flatten(nested, flatten(tail, buffer))
-                                )
-                        );
-                    }
-                }.flatten(list, List.nil())
-        );
+        return new NestedFunction() {
+            List<A> flatten(NestedList<A> nestedList) {
+                return nestedList.either.matchVal(
+                        List::of,
+                        list -> flatten(list, List.nil())
+                );
+            }
+
+            List<A> flatten(List<NestedList<A>> list, List<A> buffer) {
+                return list.matchVal(
+                        () -> buffer,
+                        (head, tail) -> head.either.matchVal(
+                                a -> List.cons(a, flatten(tail, buffer)),
+                                nested -> flatten(nested, flatten(tail, buffer))
+                        )
+                );
+            }
+        }.flatten(nestedList);
     }
 
     static final class NestedList<A> {
