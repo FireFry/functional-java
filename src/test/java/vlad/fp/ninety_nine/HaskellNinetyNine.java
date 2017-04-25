@@ -1,14 +1,22 @@
 package vlad.fp.ninety_nine;
 
+import com.google.common.primitives.Chars;
 import org.junit.Test;
+import vlad.fp.Trampoline;
 import vlad.fp.list.List;
 import vlad.fp.tailrec.TailRec;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static vlad.fp.list.ListMatcher.any;
+import static vlad.fp.list.ListMatcher.nil;
 
 public class HaskellNinetyNine {
+
+    private static List<Character> listOfChars(String s) {
+        return List.of(Chars.asList(s.toCharArray()).toArray(new Character[s.length()]));
+    }
 
     @Test
     public void problem1() {
@@ -17,17 +25,7 @@ public class HaskellNinetyNine {
     }
 
     private static <A> A last(List<A> list) {
-        return new NestedFunction() {
-
-            <A> TailRec<A> lastTailRec(List<A> list) {
-                return list.matchVal(
-                        Matcher::unmatched,
-                        (head, tail) -> tail.match(
-                                nil -> TailRec.done(head),
-                                cons -> TailRec.suspend(() -> lastTailRec(cons))));
-            }
-
-        }.lastTailRec(list).eval();
+        return list.matchRec(any(x -> nil(() -> x)));
     }
 
     @Test
@@ -37,19 +35,45 @@ public class HaskellNinetyNine {
     }
 
     private static <A> A butLast(List<A> list) {
+        return list.matchRec(any(x -> any(() -> nil(() -> x))));
+    }
+
+    @Test
+    public void problem3() {
+        assertEquals(2, (int) elementAt(List.of(1, 2, 3), 2));
+        assertEquals('e', (char) elementAt(listOfChars("haskell"), 5));
+    }
+
+    private static <A> A elementAt(List<A> list, int k) {
         return new NestedFunction() {
-
-            <A> TailRec<A> butLastTailRec(List<A> list) {
-                return list.matchVal(
-                        Matcher::unmatched,
-                        (x, tail) -> tail.matchVal(
+            TailRec<A> elementAt(List<A> list, int k) {
+                return k < 1 ?
+                        Matcher.unmatched() :
+                        list.matchVal(
                                 Matcher::unmatched,
-                                (y, tail2) -> tail2.match(
-                                        nil -> TailRec.done(x),
-                                        cons -> TailRec.suspend(() -> butLastTailRec(tail)))));
+                                (head, tail) -> k == 1
+                                        ? TailRec.done(head)
+                                        : TailRec.suspend(() -> elementAt(tail, k - 1))
+                        );
             }
+        }.elementAt(list, k).eval();
+    }
 
-        }.butLastTailRec(list).eval();
+    @Test
+    public void problem4() {
+        assertEquals(3, length(List.of(123, 456, 789)));
+        assertEquals(13, length(listOfChars("Hello, world!")));
+    }
+
+    private static <A> int length(List<A> list) {
+        return new NestedFunction() {
+            Trampoline<Integer> length(List<A> list) {
+                return list.match(
+                        nil -> Trampoline.done(0),
+                        cons -> Trampoline.suspend(() -> length(cons.tail())).map(tailLength -> tailLength + 1)
+                );
+            }
+        }.length(list).run();
     }
 
 }
