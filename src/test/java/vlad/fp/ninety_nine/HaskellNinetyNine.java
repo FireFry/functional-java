@@ -549,6 +549,9 @@ public class HaskellNinetyNine {
     }
 
     /**
+     * Problem 16
+     * ==========
+     *
      * Drop every N'th element from a list.
      *
      * Example in Haskell:
@@ -572,6 +575,38 @@ public class HaskellNinetyNine {
                 );
             }
         }.dropEvery(list, n, n - 1).run();
+    }
+
+    /**
+     * Problem 17
+     * ==========
+     *
+     * Split a list into two parts; the length of the first part is given.
+     *
+     * Do not use any predefined predicates.
+     *
+     * Example in Haskell:
+     *
+     * *Main> split "abcdefghik" 3
+     * ("abc", "defghik")
+     *
+     */
+    @Test
+    public void problem17() {
+        assertEquals(Tuple.of(listOfChars("abc"), listOfChars("defghik")), split(listOfChars("abcdefghik"), 3));
+    }
+
+    private static <A> Tuple<List<A>, List<A>> split(List<A> list, int n) {
+        return new NestedFunction() {
+            Trampoline<Tuple<List<A>, List<A>>> split(List<A> list, int n, List<A> buffer) {
+                return list.matchVal(
+                        () -> Trampoline.done(Tuple.of(reverse(buffer), list)),
+                        (x, xs) -> n < 1 ?
+                                Trampoline.done(Tuple.of(reverse(buffer), list)) :
+                                Trampoline.suspend(() -> split(xs, n - 1, List.cons(x, buffer)))
+                );
+            }
+        }.split(list, n, List.nil()).run();
     }
 
 }
