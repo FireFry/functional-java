@@ -46,16 +46,14 @@ public class HaskellNinetyNine {
     }
 
     private static <A> A elementAt(List<A> list, int k) {
-        return new NestedFunction() {
+        return k < 1 ? Matcher.unmatched() : new NestedFunction() {
             TailRec<A> elementAt(List<A> list, int k) {
-                return k < 1 ?
-                        Matcher.unmatched() :
-                        list.matchVal(
-                                Matcher::unmatched,
-                                (head, tail) -> k == 1
-                                        ? TailRec.done(head)
-                                        : TailRec.suspend(() -> elementAt(tail, k - 1))
-                        );
+                return list.matchVal(
+                        Matcher::unmatched,
+                        (head, tail) -> k == 1
+                                ? TailRec.done(head)
+                                : TailRec.suspend(() -> elementAt(tail, k - 1))
+                );
             }
         }.elementAt(list, k).eval();
     }
@@ -205,10 +203,10 @@ public class HaskellNinetyNine {
 
             List<Tuple<Integer, A>> encode(A current, int count, List<A> list) {
                 return list.matchVal(
-                        () -> List.of(new Tuple<>(count, current)),
+                        () -> List.of(Tuple.of(count, current)),
                         (x, xs) -> x.equals(current) ?
                                 encode(x, count + 1, xs) :
-                                List.cons(new Tuple<>(count, current), encode(list))
+                                List.cons(Tuple.of(count, current), encode(list))
                 );
             }
         }.encode(list);
