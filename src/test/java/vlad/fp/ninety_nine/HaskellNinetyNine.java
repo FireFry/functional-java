@@ -714,4 +714,49 @@ public class HaskellNinetyNine {
             }
         }.removeAt(List.nil(), n, list).run();
     }
+
+    /**
+     * Problem 21
+     * ==========
+     *
+     * Insert an element at a given position into a list.
+     *
+     * Example in Haskell:
+     *
+     * P21> insertAt 'X' "abcd" 2
+     * "aXbcd"
+     */
+    @Test
+    public void problem21() {
+        assertEquals(listOfChars("aXbcd"), insertAt('X', listOfChars("abcd"), 2));
+    }
+
+    private static <A> List<A> insertAt(A elem, List<A> list, int index) {
+        return index == 1 ?
+            List.cons(elem, list) :
+            list.matchVal(
+                () -> List.cons(elem),
+                (head, tail) -> List.cons(head, insertAt(elem, tail, index - 1))
+            );
+    }
+
+    /**
+     * Problem 22
+     * ==========
+     *
+     * Create a list containing all integers within a given range.
+     *
+     * Example in Haskell:
+     *
+     * Prelude> range 4 9
+     * [4,5,6,7,8,9]
+     */
+    @Test
+    public void problem22() {
+       assertEquals(List.of(4, 5, 6, 7, 8, 9), range(4, 9));
+    }
+
+    private static List<Integer> range(int i, int j) {
+        return i <= j ? List.cons(i, range(i + 1, j)) : List.nil();
+    }
 }
