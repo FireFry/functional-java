@@ -9,14 +9,11 @@ import static vlad.fp.list.ListMatcher.whenCons;
 import static vlad.fp.list.ListMatcher.whenNil;
 import static vlad.fp.list.ListMatcher.whenOther;
 
-import com.google.common.primitives.Chars;
 import org.junit.Test;
-import vlad.fp.Trampoline;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
-import vlad.fp.utils.NestedFunction;
 import vlad.fp.utils.TypeAlias;
 
 /**
@@ -28,10 +25,6 @@ import vlad.fp.utils.TypeAlias;
  * See: https://wiki.haskell.org/99_questions
  */
 public class HaskellNinetyNine {
-
-    private static List<Character> listOfChars(String s) {
-        return List.copyOf(Chars.asList(s.toCharArray()));
-    }
 
     /**
      * Problem 1
@@ -98,20 +91,16 @@ public class HaskellNinetyNine {
     @Test
     public void problem3() {
         assertEquals(2, (int) elementAt(List.of(1, 2, 3), 2));
-        assertEquals('e', (char) elementAt(listOfChars("haskell"), 5));
+        assertEquals('e', (char) elementAt(List.ofChars("haskell"), 5));
     }
 
     private static <A> A elementAt(List<A> list, int k) {
-        return k < 1 ? Matcher.unmatched() : new NestedFunction() {
-            Trampoline<A> elementAt(List<A> list, int k) {
-                return list.matchVal(
-                        Matcher::unmatched,
-                        (head, tail) -> k == 1
-                                ? Trampoline.done(head)
-                                : Trampoline.suspend(() -> elementAt(tail, k - 1))
-                );
-            }
-        }.elementAt(list, k).run();
+        return list.matchVal(
+            Matcher::unmatched,
+            (head, tail) -> k == 1
+                ? head
+                : elementAt(tail, k - 1)
+        );
     }
 
     /**
@@ -131,18 +120,14 @@ public class HaskellNinetyNine {
     @Test
     public void problem4() {
         assertEquals(3, length(List.of(123, 456, 789)));
-        assertEquals(13, length(listOfChars("Hello, world!")));
+        assertEquals(13, length(List.ofChars("Hello, world!")));
     }
 
     private static <A> int length(List<A> list) {
-        return new NestedFunction() {
-            Trampoline<Integer> length(List<A> list) {
-                return list.match(
-                        nil -> Trampoline.done(0),
-                        cons -> Trampoline.suspend(() -> length(cons.tail())).map(tailLength -> tailLength + 1)
-                );
-            }
-        }.length(list).run();
+        return list.match(
+            nil -> 0,
+            cons -> length(cons.tail()) + 1
+        );
     }
 
     /**
@@ -161,19 +146,19 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem5() {
-        assertEquals(listOfChars("!amanap ,lanac a ,nalp a ,nam A"), reverse(listOfChars("A man, a plan, a canal, panama!")));
+        assertEquals(List.ofChars("!amanap ,lanac a ,nalp a ,nam A"), reverse(List.ofChars("A man, a plan, a canal, panama!")));
         assertEquals(List.of(4, 3, 2, 1), reverse(List.of(1, 2, 3, 4)));
     }
 
     private static <A> List<A> reverse(List<A> list) {
-        return new NestedFunction() {
-            Trampoline<List<A>> reverse(List<A> list, List<A> buffer) {
-                return list.matchVal(
-                        () -> Trampoline.done(buffer),
-                        (head, tail) -> Trampoline.suspend(() -> reverse(tail, List.cons(head, buffer)))
-                );
-            }
-        }.reverse(list, List.nil()).run();
+        return reverse(list, List.nil());
+    }
+
+    private static <A> List<A> reverse(List<A> list, List<A> buffer) {
+        return list.matchVal(
+            () -> buffer,
+            (head, tail) -> reverse(tail, List.cons(head, buffer))
+        );
     }
 
     /**
@@ -196,7 +181,7 @@ public class HaskellNinetyNine {
     @Test
     public void problem6() {
         assertFalse(isPalindrome(List.of(1, 2, 3)));
-        assertTrue(isPalindrome(listOfChars("madamimadam")));
+        assertTrue(isPalindrome(List.ofChars("madamimadam")));
         assertTrue(isPalindrome(List.of(1, 2, 4, 8, 16, 8, 4, 2, 1)));
     }
 
@@ -234,32 +219,26 @@ public class HaskellNinetyNine {
         assertEquals(List.nil(), flatten(nlist()));
     }
 
-    private static <A> List<A> flatten(NestedList<A> nestedList) {
-        return new NestedFunction() {
-            List<A> flatten(NestedList<A> nestedList) {
-                return nestedList.either.matchVal(
-                        List::of,
-                        list -> flatten(list, List.nil())
-                );
-            }
-
-            List<A> flatten(List<NestedList<A>> list, List<A> buffer) {
-                return list.matchVal(
-                        () -> buffer,
-                        (head, tail) -> head.either.matchVal(
-                                a -> List.cons(a, flatten(tail, buffer)),
-                                nested -> flatten(nested, flatten(tail, buffer))
-                        )
-                );
-            }
-        }.flatten(nestedList);
+    private static <A> List<A> flatten(NestedList<A> nlist) {
+        return nlist.get().matchVal(
+            List::of,
+            list -> flatten(list, List.nil())
+        );
     }
 
-    static final class NestedList<A> {
-        private final Either<A, List<NestedList<A>>> either;
+    private static <A> List<A> flatten(List<NestedList<A>> list, List<A> buffer) {
+        return list.matchVal(
+            () -> buffer,
+            (head, tail) -> head.get().matchVal(
+                a -> List.cons(a, flatten(tail, buffer)),
+                nested -> flatten(nested, flatten(tail, buffer))
+            )
+        );
+    }
 
-        private NestedList(Either<A, List<NestedList<A>>> either) {
-            this.either = either;
+    static final class NestedList<A> extends TypeAlias<Either<A, List<NestedList<A>>>> {
+        NestedList(Either<A, List<NestedList<A>>> get) {
+            super(get);
         }
     }
 
@@ -287,7 +266,7 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem8() {
-        assertEquals(listOfChars("abcade"), compress(listOfChars("aaaabccaadeeee")));
+        assertEquals(List.ofChars("abcade"), compress(List.ofChars("aaaabccaadeeee")));
     }
 
     private static <A> List<A> compress(List<A> list) {
@@ -310,27 +289,23 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem9() {
-        assertEquals(List.of("aaaa", "b", "cc", "aa", "d", "eeee").map(s -> listOfChars(s)), pack(listOfChars("aaaabccaadeeee")));
+        assertEquals(List.of("aaaa", "b", "cc", "aa", "d", "eeee").map(List::ofChars), pack(List.ofChars("aaaabccaadeeee")));
     }
 
     private static <A> List<List<A>> pack(List<A> list) {
-        return new NestedFunction() {
-            List<List<A>> pack(List<A> list) {
-                return list.matchVal(
-                        List::nil,
-                        (x, xs) -> pack(x, List.cons(x), xs)
-                );
-            }
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> pack(x, List.cons(x), xs)
+        );
+    }
 
-            List<List<A>> pack(A current, List<A> buffer, List<A> list) {
-                return list.matchVal(
-                        () -> List.of(buffer),
-                        (x, xs) -> x.equals(current) ?
-                                pack(x, List.cons(x, buffer), xs) :
-                                List.cons(buffer, pack(list))
-                );
-            }
-        }.pack(list);
+    private static <A> List<List<A>> pack(A current, List<A> buffer, List<A> list) {
+        return list.matchVal(
+            () -> List.of(buffer),
+            (x, xs) -> x.equals(current) ?
+                pack(x, List.cons(x, buffer), xs) :
+                List.cons(buffer, pack(list))
+        );
     }
 
     /**
@@ -355,27 +330,23 @@ public class HaskellNinetyNine {
                 Tuple.of(2, 'a'),
                 Tuple.of(1, 'd'),
                 Tuple.of(4, 'e')
-        ), encode(listOfChars("aaaabccaadeeee")));
+        ), encode(List.ofChars("aaaabccaadeeee")));
     }
 
-    private <A> List<Tuple<Integer, A>> encode(List<A> list) {
-        return new NestedFunction() {
-            List<Tuple<Integer, A>> encode(List<A> list) {
-                return list.matchVal(
-                        List::nil,
-                        (x, xs) -> encode(x, 1, xs)
-                );
-            }
+    private static <A> List<Tuple<Integer, A>> encode(List<A> list) {
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> encode(x, 1, xs)
+        );
+    }
 
-            List<Tuple<Integer, A>> encode(A current, int count, List<A> list) {
-                return list.matchVal(
-                        () -> List.of(Tuple.of(count, current)),
-                        (x, xs) -> x.equals(current) ?
-                                encode(x, count + 1, xs) :
-                                List.cons(Tuple.of(count, current), encode(list))
-                );
-            }
-        }.encode(list);
+    private static <A> List<Tuple<Integer, A>> encode(A current, int count, List<A> list) {
+        return list.matchVal(
+            () -> List.of(Tuple.of(count, current)),
+            (x, xs) -> x.equals(current) ?
+                encode(x, count + 1, xs) :
+                List.cons(Tuple.of(count, current), encode(list))
+        );
     }
 
     /**
@@ -394,27 +365,23 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem11() {
-        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
+        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(List.ofChars("aaaabccaadeeee")));
     }
 
-    static <A> List<RunLength<A>> encodeModified(List<A> list) {
-        return new NestedFunction() {
-            List<RunLength<A>> encode(List<A> list) {
-                return list.matchVal(
-                        List::nil,
-                        (x, xs) -> encode(x, 1, xs)
-                );
-            }
+    private static <A> List<RunLength<A>> encodeModified(List<A> list) {
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> encodeModified(x, 1, xs)
+        );
+    }
 
-            List<RunLength<A>> encode(A current, int count, List<A> list) {
-                return list.matchVal(
-                        () -> List.of(mult(count, current)),
-                        (x, xs) -> x.equals(current) ?
-                                encode(x, count + 1, xs) :
-                                List.cons(count == 1 ? single(current) : mult(count, current), encode(list))
-                );
-            }
-        }.encode(list);
+    private static <A> List<RunLength<A>> encodeModified(A current, int count, List<A> list) {
+        return list.matchVal(
+            () -> List.of(mult(count, current)),
+            (x, xs) -> x.equals(current) ?
+                encodeModified(x, count + 1, xs) :
+                List.cons(count == 1 ? single(current) : mult(count, current), encodeModified(list))
+        );
     }
 
     static <A> RunLength<A> mult(int count, A elem) {
@@ -446,27 +413,23 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem12() {
-        assertEquals(listOfChars("aaaabccaadeeee"), decodeModified(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e'))));
+        assertEquals(List.ofChars("aaaabccaadeeee"), decodeModified(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e'))));
     }
 
     private static <A> List<A> decodeModified(List<RunLength<A>> list) {
-        return new NestedFunction() {
-            Trampoline<List<A>> decode(List<RunLength<A>> list) {
-                return list.matchVal(
-                        () -> Trampoline.done(List.nil()),
-                        (head, tail) -> head.get().matchVal(
-                                single -> Trampoline.suspend(() -> decode(1, single, tail)),
-                                multiple -> Trampoline.suspend(() -> decode(multiple.first(), multiple.second(), tail))
-                        )
-                );
-            }
+        return list.matchVal(
+            List::nil,
+            (head, tail) -> head.get().matchVal(
+                single -> decodeModified(1, single, tail),
+                multiple -> decodeModified(multiple.first(), multiple.second(), tail)
+            )
+        );
+    }
 
-            Trampoline<List<A>> decode(int count, A value, List<RunLength<A>> list) {
-                return count == 0 ?
-                        Trampoline.suspend(() -> decode(list)) :
-                        Trampoline.suspend(() -> decode(count - 1, value, list).map(tail -> List.cons(value, tail)));
-            }
-        }.decode(list).run();
+    private static <A> List<A> decodeModified(int count, A value, List<RunLength<A>> list) {
+        return count == 0 ?
+            decodeModified(list) :
+            List.cons(value, decodeModified(count - 1, value, list));
     }
 
     /**
@@ -486,7 +449,8 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem13() {
-        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(listOfChars("aaaabccaadeeee")));
+        assertEquals(List.of(mult(4, 'a'), single('b'), mult(2, 'c'), mult(2, 'a'), single('d'), mult(4, 'e')), encodeModified(
+            List.ofChars("aaaabccaadeeee")));
     }
 
     static <A> List<RunLength<A>> encodeDirect(List<A> list) {
@@ -511,14 +475,10 @@ public class HaskellNinetyNine {
     }
 
     private static <A> List<A> duplicate(List<A> list) {
-        return new NestedFunction() {
-            Trampoline<List<A>> duplicate(List<A> list) {
-                return list.matchVal(
-                        () -> Trampoline.done(List.nil()),
-                        (x, xs) -> Trampoline.suspend(() -> duplicate(xs).map(tail -> List.cons(x, List.cons(x, tail))))
-                );
-            }
-        }.duplicate(list).run();
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> List.cons(x, List.cons(x, duplicate(xs)))
+        );
     }
 
     /**
@@ -534,24 +494,20 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem15() {
-        assertEquals(listOfChars("aaabbbccc"), replicate(listOfChars("abc"), 3));
+        assertEquals(List.ofChars("aaabbbccc"), replicate(List.ofChars("abc"), 3));
     }
 
     private static <A> List<A> replicate(List<A> list, int n) {
-        return new NestedFunction() {
-            Trampoline<List<A>> replicate(List<A> list, int n) {
-                return list.matchVal(
-                        () -> Trampoline.done(List.nil()),
-                        (x, xs) -> Trampoline.suspend(() -> replicate(n, x, xs, n))
-                );
-            }
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> replicate(n, x, xs, n)
+        );
+    }
 
-            Trampoline<List<A>> replicate(int i, A current, List<A> list, int n) {
-                return i < 1 ?
-                        Trampoline.suspend(() -> replicate(list, n)) :
-                        Trampoline.suspend(() -> replicate(i - 1, current, list, n)).map(tail -> List.cons(current, tail));
-            }
-        }.replicate(list, n).run();
+    private static <A> List<A> replicate(int i, A current, List<A> list, int n) {
+        return i < 1 ?
+            replicate(list, n) :
+            List.cons(current, replicate(i - 1, current, list, n));
     }
 
     /**
@@ -567,20 +523,20 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem16() {
-        assertEquals(listOfChars("abdeghk"), dropEvery(listOfChars("abcdefghik"), 3));
+        assertEquals(List.ofChars("abdeghk"), dropEvery(List.ofChars("abcdefghik"), 3));
     }
 
-    private <A> List<A> dropEvery(List<A> list, int n) {
-        return new NestedFunction() {
-            Trampoline<List<A>> dropEvery(List<A> list, int n, int countDown) {
-                return list.matchVal(
-                        () -> Trampoline.done(List.nil()),
-                        (x, xs) -> countDown == 0 ?
-                                Trampoline.suspend(() -> dropEvery(xs, n, n - 1)) :
-                                Trampoline.suspend(() -> dropEvery(xs, n, countDown - 1).map(tail -> List.cons(x, tail)))
-                );
-            }
-        }.dropEvery(list, n, n - 1).run();
+    private static <A> List<A> dropEvery(List<A> list, int n) {
+        return dropEvery(list, n, n - 1);
+    }
+
+    private static <A> List<A> dropEvery(List<A> list, int n, int countDown) {
+        return list.matchVal(
+            List::nil,
+            (x, xs) -> countDown == 0 ?
+                dropEvery(xs, n, n - 1) :
+                List.cons(x, dropEvery(xs, n, countDown - 1))
+        );
     }
 
     /**
@@ -599,20 +555,16 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem17() {
-        assertEquals(Tuple.of(listOfChars("abc"), listOfChars("defghik")), split(listOfChars("abcdefghik"), 3));
+        assertEquals(Tuple.of(List.ofChars("abc"), List.ofChars("defghik")), split(List.ofChars("abcdefghik"), 3));
     }
 
     private static <A> Tuple<List<A>, List<A>> split(List<A> list, int n) {
-        return new NestedFunction() {
-            Trampoline<Tuple<List<A>, List<A>>> split(List<A> list, int n, List<A> buffer) {
-                return list.matchVal(
-                        () -> Trampoline.done(Tuple.of(reverse(buffer), list)),
-                        (x, xs) -> n < 1 ?
-                                Trampoline.done(Tuple.of(reverse(buffer), list)) :
-                                Trampoline.suspend(() -> split(xs, n - 1, List.cons(x, buffer)))
-                );
-            }
-        }.split(list, n, List.nil()).run();
+        return list.matchVal(
+            () -> Tuple.of(List.nil(), list),
+            (x, xs) -> n < 1 ?
+                Tuple.of(List.nil(), list) :
+                split(xs, n - 1).match((first, second) -> Tuple.of(List.cons(x, first), second))
+        );
     }
 
     /**
@@ -631,21 +583,18 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem18() {
-        assertEquals(listOfChars("cdefg"), slice(listOfChars("abcdefghik"), 3, 7));
+        assertEquals(List.ofChars("cdefg"), slice(List.ofChars("abcdefghik"), 3, 7));
     }
-    
+
     private static <A> List<A> slice(List<A> list, int i, int k) {
-        return new NestedFunction() {
-            Trampoline<List<A>> slice(List<A> list, int i, int k) {
-                return k < 1 ?
-                        Trampoline.done(List.nil()) :
-                        list.matchVal(
-                                () -> Trampoline.done(List.nil()),
-                                (x, xs) -> Trampoline.suspend(() -> slice(xs, i - 1, k - 1)).map(
-                                        tail -> i > 1 ? tail : List.cons(x, tail))
-                        );
-            }
-        }.slice(list, i, k).run();
+        return k < 1 ?
+            List.nil() :
+            list.matchVal(
+                List::nil,
+                (x, xs) -> i > 1 ?
+                    slice(xs, i - 1, k - 1) :
+                    List.cons(x, slice(xs, i - 1, k - 1))
+            );
     }
 
     /**
@@ -666,23 +615,19 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem19() {
-        assertEquals(listOfChars("defghabc"), rotate(listOfChars("abcdefgh"), 3));
-        assertEquals(listOfChars("ghabcdef"), rotate(listOfChars("abcdefgh"), -2));
+        assertEquals(List.ofChars("defghabc"), rotate(List.ofChars("abcdefgh"), 3));
+        assertEquals(List.ofChars("ghabcdef"), rotate(List.ofChars("abcdefgh"), -2));
     }
 
     private static <A> List<A> rotate(List<A> list, int n) {
-        return new NestedFunction() {
-            Tuple<List<A>, List<A>> drop(List<A> list, int n, List<A> buffer) {
-                return list.match(
-                        when(n > 0, () -> whenCons((x, xs) -> then(() -> drop(xs, n - 1, List.cons(x, buffer))))),
-                        whenOther(() -> Tuple.of(reverse(buffer), list))
-                );
-            }
+        return drop(list, Math.floorMod(n, length(list)), List.nil()).match((first, second) -> second.append(first));
+    }
 
-            List<A> rotate(List<A> list, int n) {
-                return drop(list, Math.floorMod(n, length(list)), List.nil()).match((first, second) -> second.append(first));
-            }
-        }.rotate(list, n);
+    private static <A> Tuple<List<A>, List<A>> drop(List<A> list, int n, List<A> buffer) {
+        return list.match(
+            when(n > 0, () -> whenCons((x, xs) -> then(() -> drop(xs, n - 1, List.cons(x, buffer))))),
+            whenOther(() -> Tuple.of(reverse(buffer), list))
+        );
     }
 
     /**
@@ -698,21 +643,16 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem20() {
-        assertEquals(Tuple.of('b', listOfChars("acd")), removeAt(2, listOfChars("abcd")));
+        assertEquals(Tuple.of('b', List.ofChars("acd")), removeAt(2, List.ofChars("abcd")));
     }
 
     private static <A> Tuple<A, List<A>> removeAt(int n, List<A> list) {
-        return new NestedFunction() {
-            Trampoline<Tuple<A, List<A>>> removeAt(List<A> buffer, int n, List<A> list) {
-                return list.matchVal(
-                        Matcher::unmatched,
-                        (x, xs) -> n <= 1 ?
-                                Trampoline.done(Tuple.of(x, reverse(buffer).append(xs))) :
-                                Trampoline.suspend(() -> removeAt(List.cons(x, buffer), n - 1, xs))
-
-                );
-            }
-        }.removeAt(List.nil(), n, list).run();
+        return list.matchVal(
+            Matcher::unmatched,
+            (x, xs) -> n <= 1 ?
+                Tuple.of(x, xs) :
+                removeAt(n - 1, xs).match((first, second) -> Tuple.of(first, List.cons(x, second)))
+        );
     }
 
     /**
@@ -728,7 +668,7 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem21() {
-        assertEquals(listOfChars("aXbcd"), insertAt('X', listOfChars("abcd"), 2));
+        assertEquals(List.ofChars("aXbcd"), insertAt('X', List.ofChars("abcd"), 2));
     }
 
     private static <A> List<A> insertAt(A elem, List<A> list, int index) {

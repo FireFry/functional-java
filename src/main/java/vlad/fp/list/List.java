@@ -2,6 +2,7 @@ package vlad.fp.list;
 
 import static vlad.fp.list.ListMatcher.whenTail;
 
+import com.google.common.primitives.Chars;
 import vlad.fp.Trampoline;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.NestedFunction;
@@ -11,6 +12,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class List<A> {
+
+    public static List<Character> ofChars(String s) {
+      return copyOf(Chars.asList(s.toCharArray()));
+    }
 
     public static <A> List<A> cons(A head) {
         return new Cons<>(head, nil());
