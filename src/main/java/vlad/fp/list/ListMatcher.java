@@ -71,14 +71,14 @@ public final class ListMatcher<A, B> {
     }
 
     public static <A, B> ListMatcher<A, B> whenOther(Supplier<B> result) {
-        return done(result);
+        return then(result);
     }
 
-    public static <A, B> ListMatcher<A, B> done(B result) {
-        return done(() -> result);
+    public static <A, B> ListMatcher<A, B> then(B result) {
+        return then(() -> result);
     }
 
-    public static <A, B> ListMatcher<A, B> done(Supplier<B> result) {
+    public static <A, B> ListMatcher<A, B> then(Supplier<B> result) {
         return wrap(list -> Maybe.some(Either.right(result.get())));
     }
 

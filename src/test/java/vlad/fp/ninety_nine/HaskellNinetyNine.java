@@ -3,7 +3,7 @@ package vlad.fp.ninety_nine;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static vlad.fp.list.ListMatcher.done;
+import static vlad.fp.list.ListMatcher.then;
 import static vlad.fp.list.ListMatcher.when;
 import static vlad.fp.list.ListMatcher.whenCons;
 import static vlad.fp.list.ListMatcher.whenNil;
@@ -292,7 +292,7 @@ public class HaskellNinetyNine {
 
     private static <A> List<A> compress(List<A> list) {
         return list.match(
-                whenCons((x, tailX) -> whenCons(y -> done(() -> x.equals(y) ? compress(tailX) : List.cons(x, compress(tailX))))),
+                whenCons((x, tailX) -> whenCons(y -> then(() -> x.equals(y) ? compress(tailX) : List.cons(x, compress(tailX))))),
                 whenOther(() -> list)
         );
     }
@@ -674,7 +674,7 @@ public class HaskellNinetyNine {
         return new NestedFunction() {
             Tuple<List<A>, List<A>> drop(List<A> list, int n, List<A> buffer) {
                 return list.match(
-                        when(n > 0, () -> whenCons((x, xs) -> done(() -> drop(xs, n - 1, List.cons(x, buffer))))),
+                        when(n > 0, () -> whenCons((x, xs) -> then(() -> drop(xs, n - 1, List.cons(x, buffer))))),
                         whenOther(() -> Tuple.of(reverse(buffer), list))
                 );
             }
