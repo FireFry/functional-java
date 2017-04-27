@@ -10,6 +10,7 @@ import static vlad.fp.list.ListMatcher.whenNil;
 import static vlad.fp.list.ListMatcher.whenOther;
 
 import org.junit.Test;
+import vlad.fp.Random;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
 import vlad.fp.tuple.Tuple;
@@ -713,6 +714,19 @@ public class HaskellNinetyNine {
      */
     @Test
     public void problem23() {
+        assertEquals(List.ofChars("eda"), rndSelect(List.ofChars("abcdefgh"), 3, new Random(64731285)));
+    }
 
+    private static <A> List<A> rndSelect(List<A> list, int n, Random rnd) {
+        return rndSelect(list, length(list), n, rnd);
+    }
+
+    private static <A> List<A> rndSelect(List<A> list, int size, int n, Random rnd) {
+        return n < 1 ? List.nil() : list.matchVal(
+                List::nil,
+                (head, tail) -> rnd.getInt(size) < n ?
+                        List.cons(head, rndSelect(tail, size - 1, n - 1, rnd.next())) :
+                        rndSelect(tail, size - 1, n, rnd.next())
+        );
     }
 }
