@@ -699,4 +699,20 @@ public class HaskellNinetyNine {
     private static List<Integer> range(int i, int j) {
         return i <= j ? List.cons(i, range(i + 1, j)) : List.nil();
     }
+
+    /**
+     * Problem 23
+     * ==========
+     *
+     * Extract a given number of randomly selected elements from a list.
+     *
+     * Example in Haskell:
+     *
+     * Prelude System.Random> rnd_select "abcdefgh" 3 >>= putStrLn
+     * eda
+     */
+    @Test
+    public void problem23() {
+
+    }
 }
