@@ -1,21 +1,14 @@
 package vlad.fp.ninety_nine;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static vlad.fp.list.ListMatcher.then;
-import static vlad.fp.list.ListMatcher.when;
-import static vlad.fp.list.ListMatcher.whenCons;
-import static vlad.fp.list.ListMatcher.whenNil;
-import static vlad.fp.list.ListMatcher.whenOther;
-
 import org.junit.Test;
-import vlad.fp.Random;
 import vlad.fp.either.Either;
 import vlad.fp.list.List;
 import vlad.fp.tuple.Tuple;
 import vlad.fp.utils.Matcher;
 import vlad.fp.utils.TypeAlias;
+
+import static org.junit.Assert.*;
+import static vlad.fp.list.ListMatcher.*;
 
 /**
  * H-99: Ninety-Nine Haskell Problems
@@ -701,32 +694,4 @@ public class HaskellNinetyNine {
         return i <= j ? List.cons(i, range(i + 1, j)) : List.nil();
     }
 
-    /**
-     * Problem 23
-     * ==========
-     *
-     * Extract a given number of randomly selected elements from a list.
-     *
-     * Example in Haskell:
-     *
-     * Prelude System.Random> rnd_select "abcdefgh" 3 >>= putStrLn
-     * eda
-     */
-    @Test
-    public void problem23() {
-        assertEquals(List.ofChars("eda"), rndSelect(List.ofChars("abcdefgh"), 3, new Random(64731285)));
-    }
-
-    private static <A> List<A> rndSelect(List<A> list, int n, Random rnd) {
-        return rndSelect(list, length(list), n, rnd);
-    }
-
-    private static <A> List<A> rndSelect(List<A> list, int size, int n, Random rnd) {
-        return n < 1 ? List.nil() : list.matchVal(
-                List::nil,
-                (head, tail) -> rnd.getInt(size) < n ?
-                        List.cons(head, rndSelect(tail, size - 1, n - 1, rnd.next())) :
-                        rndSelect(tail, size - 1, n, rnd.next())
-        );
-    }
 }
